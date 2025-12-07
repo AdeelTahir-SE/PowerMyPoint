@@ -24,69 +24,80 @@ export async function POST(request: NextRequest) {
             messages: [
                 {
                     role: 'user',
-                    content: `You are a professional presentation creator. Create a detailed presentation based on this prompt: "${prompt}"
+                    content: `Create a presentation about: ${prompt}
 
 Please respond with a JSON object in this exact format:
 {
   "title": "Presentation Title",
-  "description": "Brief description of the presentation",
+  "description": "Brief description",
   "slides": [
     {
-      "id": "1",
       "title": "Slide Title",
-      "content": "Slide content in markdown format. Use bullet points, headings, and formatting.",
-      "order": 1
+      "content": "Slide content in markdown format"
     }
   ]
 }
 
-Create 5-8 slides with comprehensive content. Make the first slide an introduction and the last slide a conclusion or call-to-action. Use markdown formatting for the content.`,
+Create 5-7 slides with engaging content. Use markdown formatting for the content.`,
                 },
             ],
         });
 
         // Parse Claude's response
-        const responseText = message.content[0].type === 'text'
-            ? message.content[0].text
-            : '';
+        const content = message.content[0];
+        let presentationData;
 
-        // Extract JSON from the response
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error('Failed to parse presentation data from Claude response');
+        if (content.type === 'text') {
+            const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                presentationData = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('Failed to parse presentation data');
+            }
         }
 
-        const presentationData = JSON.parse(jsonMatch[0]);
+        // Add is_public flag
+        presentationData.is_public = true;
 
-        // Save to Supabase
-        const { data: presentation, error } = await supabase
-            .from('presentations')
-            .insert({
-                title: presentationData.title,
-                description: presentationData.description,
-                slides: presentationData.slides,
-                user_id: userId || null,
-                is_public: true,
-            })
+        // Save to database
+        const { data, error } = await supabase
+            .from('Presentation')
+            .insert([
+                {
+                    presentation_data: presentationData,
+                    prompts: [prompt],
+                    owner_id: userId || '00000000-0000-0000-0000-000000000000', // Default UUID if no user
+                }
+            ])
             .select()
             .single();
 
         if (error) {
-            console.error('Supabase error:', error);
+            console.error('Database error:', error);
             return NextResponse.json(
-                { error: 'Failed to save presentation to database' },
+                { error: 'Failed to save presentation' },
                 { status: 500 }
             );
         }
 
+        // Create stats entry
+        await supabase
+            .from('PresentationStats')
+            .insert([
+                {
+                    presentation_id: data.presentation_id,
+                    likes: 0,
+                }
+            ]);
+
         return NextResponse.json({
-            data: presentation,
+            data,
             message: 'Presentation generated successfully',
         });
     } catch (error) {
         console.error('Error generating presentation:', error);
         return NextResponse.json(
-            { error: 'Failed to generate presentation', details: error instanceof Error ? error.message : 'Unknown error' },
+            { error: 'Failed to generate presentation' },
             { status: 500 }
         );
     }

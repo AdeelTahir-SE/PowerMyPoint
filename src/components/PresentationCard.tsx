@@ -2,7 +2,7 @@
 
 import { Presentation } from "@/types/types";
 import Link from "next/link";
-import { Calendar, Eye, FileText, Trash2, Edit } from "lucide-react";
+import { Calendar, Eye, FileText, Trash2, Edit, Heart } from "lucide-react";
 import { useState } from "react";
 
 interface PresentationCardProps {
@@ -19,12 +19,12 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`/api/presentations/${Presentation.id}`, {
+            const response = await fetch(`/api/presentations/${Presentation?.presentation_id}`, {
                 method: 'DELETE',
             });
 
             if (response.ok && onDelete) {
-                onDelete(Presentation.id);
+                onDelete(Presentation.presentation_id);
             }
         } catch (error) {
             console.error('Error deleting presentation:', error);
@@ -39,6 +39,12 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
         day: 'numeric',
     });
 
+    // Extract data from presentation_data JSON
+    const title = Presentation?.title || 'Untitled Presentation';
+    const description = Presentation?.description || 'No description available';
+    const slidesCount = Presentation?.slides?.length || 0;
+    const likes = (Presentation as any).PresentationStats?.[0]?.likes || 0;
+
     return (
         <div className="group relative glass-card rounded-2xl overflow-hidden border border-white/10 shadow-2xl hover-lift transition-all duration-500">
             {/* Gradient overlay on hover */}
@@ -47,7 +53,7 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
             {/* Glow effect on hover */}
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
 
-            <Link href={`/presentations/${Presentation.id}`} className="block p-6 relative">
+            <Link href={`/presentations/${Presentation.presentation_id}`} className="block p-6 relative">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -56,20 +62,22 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
                         </div>
                         <span className="text-sm font-semibold text-indigo-300">Presentation</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1 glass rounded-full border border-white/10">
-                        <Eye size={14} className="text-indigo-300" />
-                        <span className="text-sm text-white font-medium">{Presentation.views || 0}</span>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-3 py-1 glass rounded-full border border-white/10">
+                            <Heart size={14} className="text-red-400" />
+                            <span className="text-sm text-white font-medium">{likes}</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-2xl font-bold text-white mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-300 group-hover:to-purple-300 transition-all duration-300">
-                    {Presentation.title}
+                    {title}
                 </h3>
 
                 {/* Description */}
                 <p className="text-indigo-200/70 text-sm mb-4 line-clamp-2 leading-relaxed">
-                    {Presentation.description || 'No description available'}
+                    {description}
                 </p>
 
                 {/* Footer */}
@@ -80,7 +88,7 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1 glass-dark rounded-full border border-white/5">
                         <FileText size={16} />
-                        <span className="font-medium">{Presentation.slides?.length || 0} slides</span>
+                        <span className="font-medium">{slidesCount} slides</span>
                     </div>
                 </div>
             </Link>
@@ -88,7 +96,7 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
             {/* Action buttons */}
             <div className="flex items-center gap-2 px-6 pb-4 pt-2 border-t border-white/10 relative">
                 <Link
-                    href={`/presentations/${Presentation.id}/edit`}
+                    href={`/presentations/${Presentation.presentation_id}/edit`}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 glass hover:glass-card text-indigo-300 hover:text-white rounded-xl transition-all text-sm font-semibold border border-white/10 hover:border-indigo-500/50"
                     onClick={(e) => e.stopPropagation()}
                 >

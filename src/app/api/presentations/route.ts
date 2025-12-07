@@ -1,22 +1,25 @@
 import { supabase } from '@/database/connect';
 import { NextRequest, NextResponse } from 'next/server';
 
-// GET all presentations
+// GET all presentations with pagination and filtering
 export async function GET(request: NextRequest) {
     try {
-        const { searchParams } = new URL(request.url);
-        const limit = parseInt(searchParams.get('limit') || '20');
+        const searchParams = request.nextUrl.searchParams;
+        const limit = parseInt(searchParams.get('limit') || '10');
         const offset = parseInt(searchParams.get('offset') || '0');
         const isPublic = searchParams.get('public') === 'true';
 
         let query = supabase
-            .from('presentations')
-            .select('*')
+            .from('Presentation')
+            .select(`
+                *,
+                PresentationStats(*)
+            `)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
         if (isPublic) {
-            query = query.eq('is_public', true);
+            query = query.eq('presentation_data->>is_public', 'true');
         }
 
         const { data, error } = await query;
@@ -43,24 +46,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { title, description, slides, user_id, is_public } = body;
-
-        if (!title || !slides) {
-            return NextResponse.json(
-                { error: 'Title and slides are required' },
-                { status: 400 }
-            );
-        }
+        const { presentation_data, prompts, thumbnail, owner_id } = body;
 
         const { data, error } = await supabase
-            .from('presentations')
-            .insert({
-                title,
-                description: description || '',
-                slides,
-                user_id: user_id || null,
-                is_public: is_public !== undefined ? is_public : true,
-            })
+            .from('Presentation')
+            .insert([
+                {
+                    presentation_data,
+                    prompts: prompts ? [prompts] : [],
+                    thumbnail,
+                    owner_id,
+                }
+            ])
             .select()
             .single();
 
@@ -71,6 +68,16 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Create stats entry
+        await supabase
+            .from('PresentationStats')
+            .insert([
+                {
+                    presentation_id: data.presentation_id,
+                    likes: 0,
+                }
+            ]);
 
         return NextResponse.json({
             data,

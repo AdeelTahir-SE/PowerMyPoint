@@ -71,7 +71,7 @@ export interface Slide {
 }
 
 export interface Presentation {
-  id: string;
+  presentation_id: string;
   title: string;
   description: string;
   slides: Slide[];

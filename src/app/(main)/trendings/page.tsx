@@ -35,7 +35,7 @@ export default function TrendingsPage() {
     };
 
     const handleDelete = (id: string) => {
-        setPresentations(presentations.filter(p => p.id !== id));
+        setPresentations(presentations.filter(p => p?.presentation_id !== id));
     };
 
     return (
@@ -107,7 +107,7 @@ export default function TrendingsPage() {
                         {/* Presentations Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {presentations.map((presentation, index) => (
-                                <div key={presentation.id} className="relative">
+                                <div key={presentation?.presentation_id} className="relative">
                                     {/* Rank badge for top 3 */}
                                     {index < 3 && (
                                         <div className="absolute -top-2 -left-2 z-10 bg-gradient-to-br from-yellow-400 to-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">

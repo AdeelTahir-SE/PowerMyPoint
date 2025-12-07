@@ -5,8 +5,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Presentation } from "@/types/types";
 import { useEffect, useState } from "react";
 import { Sparkles, Search } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Page() {
+    const { user } = useAuth();
     const [presentations, setPresentations] = useState<Presentation[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -41,7 +43,10 @@ export default function Page() {
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt }),
+                body: JSON.stringify({
+                    prompt,
+                    userId: user?.id
+                }),
             });
 
             const result = await response.json();
@@ -61,7 +66,7 @@ export default function Page() {
     };
 
     const handleDelete = (id: string) => {
-        setPresentations(presentations.filter(p => p.id !== id));
+        setPresentations(presentations.filter(p => p.presentation_id !== id));
     };
 
     return (
@@ -149,7 +154,7 @@ export default function Page() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {presentations.map((presentation) => (
                             <PresentationCard
-                                key={presentation.id}
+                                key={presentation.presentation_id}
                                 Presentation={presentation}
                                 onDelete={handleDelete}
                             />

@@ -10,9 +10,12 @@ export async function GET(
         const { id } = await params;
 
         const { data, error } = await supabase
-            .from('presentations')
-            .select('*')
-            .eq('id', id)
+            .from('Presentation')
+            .select(`
+                *,
+                PresentationStats(*)
+            `)
+            .eq('presentation_id', id)
             .single();
 
         if (error) {
@@ -22,12 +25,6 @@ export async function GET(
                 { status: 404 }
             );
         }
-
-        // Increment view count
-        await supabase
-            .from('presentations')
-            .update({ views: (data.views || 0) + 1 })
-            .eq('id', id);
 
         return NextResponse.json({ data });
     } catch (error) {
@@ -47,18 +44,17 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { title, description, slides, is_public } = body;
+        const { presentation_data, prompts, thumbnail } = body;
 
         const updateData: Record<string, unknown> = {};
-        if (title !== undefined) updateData.title = title;
-        if (description !== undefined) updateData.description = description;
-        if (slides !== undefined) updateData.slides = slides;
-        if (is_public !== undefined) updateData.is_public = is_public;
+        if (presentation_data !== undefined) updateData.presentation_data = presentation_data;
+        if (prompts !== undefined) updateData.prompts = prompts;
+        if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
 
         const { data, error } = await supabase
-            .from('presentations')
+            .from('Presentation')
             .update(updateData)
-            .eq('id', id)
+            .eq('presentation_id', id)
             .select()
             .single();
 
@@ -91,10 +87,16 @@ export async function DELETE(
     try {
         const { id } = await params;
 
-        const { error } = await supabase
-            .from('presentations')
+        // Delete stats first (foreign key constraint)
+        await supabase
+            .from('PresentationStats')
             .delete()
-            .eq('id', id);
+            .eq('presentation_id', id);
+
+        const { error } = await supabase
+            .from('Presentation')
+            .delete()
+            .eq('presentation_id', id);
 
         if (error) {
             console.error('Supabase error:', error);

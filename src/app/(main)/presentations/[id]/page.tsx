@@ -43,7 +43,7 @@ export default function PresentationDetailPage() {
         if (!presentation || !confirm('Are you sure you want to delete this presentation?')) return;
 
         try {
-            const response = await fetch(`/api/presentations/${presentation.id}`, {
+            const response = await fetch(`/api/presentations/${presentation?.presentation_id}`, {
                 method: 'DELETE',
             });
 
@@ -120,7 +120,7 @@ export default function PresentationDetailPage() {
                             </button>
 
                             <Link
-                                href={`/presentations/${presentation.id}/edit`}
+                                href={`/presentations/${presentation?.presentation_id}/edit`}
                                 className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                             >
                                 <Edit size={18} />
