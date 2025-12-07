@@ -53,7 +53,7 @@ export default function EditPresentationPage() {
         setError('');
 
         try {
-            const response = await fetch(`/api/presentations/${presentation.id}`, {
+            const response = await fetch(`/api/presentations/${presentation?.presentation_id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -64,7 +64,7 @@ export default function EditPresentationPage() {
             });
 
             if (response.ok) {
-                router.push(`/presentations/${presentation.id}`);
+                router.push(`/presentations/${presentation?.presentation_id}`);
             } else {
                 setError('Failed to save changes');
             }
@@ -138,7 +138,7 @@ export default function EditPresentationPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <Link
-                            href={`/presentations/${presentation?.id}`}
+                            href={`/presentations/${presentation?.presentation_id}`}
                             className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                             <ArrowLeft size={20} />
@@ -151,7 +151,7 @@ export default function EditPresentationPage() {
 
                         <div className="flex items-center gap-2">
                             <Link
-                                href={`/presentations/${presentation?.id}`}
+                                href={`/presentations/${presentation?.presentation_id}`}
                                 className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                             >
                                 <Eye size={18} />
