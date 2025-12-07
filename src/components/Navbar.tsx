@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 import React from 'react';
 
 export const Navbar: React.FC = () => {
@@ -22,9 +23,9 @@ export const Navbar: React.FC = () => {
         <a className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="#">Pricing</a>
       </nav>
       <div className="flex items-center gap-2">
-        <button className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200/50 dark:text-slate-300 dark:hover:bg-slate-800/50">
+        <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200/50 dark:text-slate-300 dark:hover:bg-slate-800/50">
           Log In
-        </button>
+        </Link>
         <button className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-light hover:shadow-lg hover:-translate-y-px sm:block">
           Get Started Free
         </button>
