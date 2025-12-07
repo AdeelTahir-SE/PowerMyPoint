@@ -44,7 +44,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
             Simple, Transparent Pricing
           </h2>
           <p className="mt-3 sm:mt-4 max-w-3xl mx-auto text-base sm:text-lg text-slate-600 dark:text-slate-400 px-4">
-            Choose the plan that's right for you.
+            Choose the plan that&apos;s right for you.
           </p>
         </div>
 
@@ -53,11 +53,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative flex flex-col gap-5 sm:gap-6 rounded-xl p-6 sm:p-8 transition-all duration-300 ${
-                plan.isFeatured
+              className={`relative flex flex-col gap-5 sm:gap-6 rounded-xl p-6 sm:p-8 transition-all duration-300 ${plan.isFeatured
                   ? 'border-2 border-primary bg-white shadow-2xl shadow-primary/20 dark:bg-surface-dark'
                   : 'border border-subtle-light/50 bg-white/50 dark:border-subtle-dark/50 dark:bg-surface-dark/50'
-              }`}
+                }`}
             >
               {/* Featured Badge */}
               {plan.isFeatured && (
@@ -83,11 +82,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }
 
               {/* CTA Button */}
               <a
-                className={`inline-flex h-11 sm:h-12 w-full items-center justify-center rounded-lg px-5 sm:px-6 text-sm sm:text-base font-semibold transition-all ${
-                  plan.buttonStyle === 'primary'
+                className={`inline-flex h-11 sm:h-12 w-full items-center justify-center rounded-lg px-5 sm:px-6 text-sm sm:text-base font-semibold transition-all ${plan.buttonStyle === 'primary'
                     ? 'bg-primary text-white shadow-lg hover:bg-primary-light hover:shadow-xl hover:-translate-y-px'
                     : 'border border-subtle-light bg-transparent text-slate-700 shadow-sm hover:bg-slate-100 dark:border-subtle-dark dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
+                  }`}
                 href="#"
               >
                 {plan.buttonText}
