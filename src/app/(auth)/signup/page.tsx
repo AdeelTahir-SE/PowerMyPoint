@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Sparkles, User, Mail, Lock, Briefcase, Heart, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
+
 export default function SignupPage() {
+    const router = useRouter();
+    const { signUp } = useAuth();
+
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -75,13 +81,42 @@ export default function SignupPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation
+        const newErrors: Record<string, string> = {};
+        if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
+        if (!formData.email.trim()) newErrors.email = 'Email is required';
+        if (!formData.password) newErrors.password = 'Password is required';
+        if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+        if (!formData.terms) newErrors.terms = 'You must accept the terms';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         setLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const { error } = await signUp(formData.email, formData.password, {
+                full_name: formData.fullName,
+                role: formData.role,
+                account_type: formData.accountType,
+                interests: formData.interests,
+                newsletter: formData.newsletter,
+            });
+
+            if (error) {
+                setErrors({ submit: error.message });
+            } else {
+                router.push('/explore');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            setErrors({ submit: 'Failed to create account' });
+        } finally {
             setLoading(false);
-            alert('Account created successfully! 🎉');
-        }, 2000);
+        }
     };
 
     return (
@@ -187,6 +222,7 @@ export default function SignupPage() {
                                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
+                                    {errors.fullName && <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>}
                                 </div>
 
                                 {/* Email */}
@@ -210,6 +246,7 @@ export default function SignupPage() {
                                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
+                                    {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
                                 </div>
 
                                 {/* Password */}
@@ -248,6 +285,38 @@ export default function SignupPage() {
                                             <p className="text-xs text-slate-400 font-semibold capitalize">{passwordStrength} password strength</p>
                                         </div>
                                     )}
+                                    {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
+                                </div>
+
+                                {/* Confirm Password */}
+                                <div className="group">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                        <Lock size={16} />
+                                        Confirm Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            name="confirmPassword"
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            onFocus={() => setFocusedField('confirmPassword')}
+                                            onBlur={() => setFocusedField(null)}
+                                            placeholder="Confirm your password"
+                                            className="w-full px-4 py-3 pr-12 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                        {focusedField === 'confirmPassword' && (
+                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
+                                        )}
+                                    </div>
+                                    {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
                                 </div>
 
                                 {/* Role */}
@@ -353,6 +422,14 @@ export default function SignupPage() {
                                         I agree to the <span className="text-blue-400 font-semibold">Terms</span> and <span className="text-blue-400 font-semibold">Privacy Policy</span>
                                     </span>
                                 </label>
+                                {errors.terms && <p className="text-red-400 text-sm mt-1">{errors.terms}</p>}
+
+                                {/* Submit Error */}
+                                {errors.submit && (
+                                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                                        <p className="text-red-400 text-sm">{errors.submit}</p>
+                                    </div>
+                                )}
 
                                 {/* Submit Button */}
                                 <button

@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, LogIn, Mail, Lock, ArrowRight, Shield } from 'lucide-react';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { signIn } = useAuth();
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -26,13 +32,28 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!formData.email || !formData.password) {
+            setErrors({ submit: 'Please fill in all fields' });
+            return;
+        }
+
         setLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const { error } = await signIn(formData.email, formData.password);
+
+            if (error) {
+                setErrors({ submit: error.message });
+            } else {
+                router.push('/explore');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setErrors({ submit: 'Failed to sign in' });
+        } finally {
             setLoading(false);
-            alert('Login successful! 🎉');
-        }, 2000);
+        }
     };
 
     return (
