@@ -70,26 +70,26 @@ export default function Page() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 water-bg">
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 water-bg">
             {/* Animated background orbs */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-10 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl float"></div>
+                <div className="absolute top-20 left-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-slate-600/5 rounded-full blur-3xl float"></div>
             </div>
 
             {/* Header */}
             <div className="glass-dark border-b border-white/10 sticky top-0 z-10 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg hover-glow">
+                        <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shadow-lg hover-glow">
                             <Search className="text-white" size={28} />
                         </div>
-                        <h1 className="text-4xl font-bold gradient-text-blue">
+                        <h1 className="text-4xl font-bold gradient-text">
                             Explore Presentations
                         </h1>
                     </div>
-                    <p className="text-indigo-200/80">
+                    <p className="text-purple-200/80">
                         Discover amazing presentations or create your own with AI
                     </p>
                 </div>
@@ -115,7 +115,7 @@ export default function Page() {
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 placeholder="Describe your presentation... e.g., 'Create a presentation about climate change'"
-                                className="flex-1 px-6 py-4 glass border border-white/20 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/5 text-white placeholder-indigo-200/50 text-lg transition-all"
+                                className="flex-1 px-6 py-4 glass border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-indigo-200/50 text-lg transition-all"
                                 disabled={creating}
                             />
                             <button
@@ -163,13 +163,13 @@ export default function Page() {
                 ) : (
                     <div className="text-center py-32">
                         <div className="glass-card rounded-2xl p-12 max-w-md mx-auto">
-                            <div className="text-indigo-400/60 mb-6 float">
+                            <div className="text-purple-400/60 mb-6 float">
                                 <Search size={80} className="mx-auto" />
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-3">
                                 No presentations yet
                             </h3>
-                            <p className="text-indigo-200/70">
+                            <p className="text-purple-200/70">
                                 Create your first presentation using the form above
                             </p>
                         </div>
