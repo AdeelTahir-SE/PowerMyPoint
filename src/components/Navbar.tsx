@@ -26,9 +26,9 @@ export const Navbar: React.FC = () => {
         <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200/50 dark:text-slate-300 dark:hover:bg-slate-800/50">
           Log In
         </Link>
-        <button className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-light hover:shadow-lg hover:-translate-y-px sm:block">
+        <Link href="/signup" className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-light hover:shadow-lg hover:-translate-y-px sm:block">
           Get Started Free
-        </button>
+        </Link>
         <button className="ml-2 block md:hidden">
           <span className="material-symbols-outlined"> menu </span>
         </button>

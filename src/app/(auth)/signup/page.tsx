@@ -30,12 +30,12 @@ export default function SignupPage() {
     const [focusedField, setFocusedField] = useState<string | null>(null);
 
     const interestOptions = [
-        { name: 'Business', icon: '💼', color: 'from-blue-600 to-blue-700' },
+        { name: 'Business', icon: '💼', color: 'from-indigo-600 to-purple-700' },
         { name: 'Education', icon: '📚', color: 'from-slate-600 to-slate-700' },
-        { name: 'Technology', icon: '⚡', color: 'from-cyan-600 to-cyan-700' },
-        { name: 'Marketing', icon: '📈', color: 'from-blue-700 to-blue-800' },
+        { name: 'Technology', icon: '⚡', color: 'from-purple-600 to-purple-700' },
+        { name: 'Marketing', icon: '📈', color: 'from-indigo-700 to-purple-800' },
         { name: 'Design', icon: '🎨', color: 'from-slate-700 to-slate-800' },
-        { name: 'Science', icon: '🔬', color: 'from-cyan-700 to-cyan-800' },
+        { name: 'Science', icon: '🔬', color: 'from-purple-700 to-purple-800' },
     ];
 
     const validatePassword = (password: string) => {
@@ -147,14 +147,14 @@ export default function SignupPage() {
                     {/* Left Side - Hero Content */}
                     <div className="hidden md:block space-y-8 p-8 ">
                         <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-full backdrop-blur-sm">
-                                <Zap className="text-blue-400" size={16} />
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-purple-500/30 rounded-full backdrop-blur-sm">
+                                <Zap className="text-purple-400" size={16} />
                                 <span className="text-sm font-semibold text-white">Enterprise Grade</span>
                             </div>
 
                             <h1 className="text-6xl font-black text-white leading-tight">
                                 Professional
-                                <span className="block bg-gradient-to-r from-blue-400 via-cyan-400 to-slate-300 text-transparent bg-clip-text">
+                                <span className="block gradient-text text-transparent bg-clip-text">
                                     Presentations
                                 </span>
                                 Made Simple
@@ -167,9 +167,9 @@ export default function SignupPage() {
 
                         <div className="space-y-4">
                             {[
-                                { icon: '🔒', text: 'Enterprise security', color: 'from-blue-600 to-blue-700' },
+                                { icon: '🔒', text: 'Enterprise security', color: 'from-indigo-600 to-purple-700' },
                                 { icon: '📊', text: 'Advanced analytics', color: 'from-slate-600 to-slate-700' },
-                                { icon: '⚡', text: 'Real-time collaboration', color: 'from-cyan-600 to-cyan-700' },
+                                { icon: '⚡', text: 'Real-time collaboration', color: 'from-purple-600 to-purple-700' },
                             ].map((feature, i) => (
                                 <div
                                     key={i}
@@ -187,13 +187,13 @@ export default function SignupPage() {
                     {/* Right Side - Form */}
                     <div className="relative">
                         {/* Glow Effect */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/30 via-cyan-600/30 to-slate-600/30 rounded-3xl blur-2xl opacity-20"></div>
+                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600/30 via-purple-600/30 to-slate-600/30 rounded-3xl blur-2xl opacity-20"></div>
 
                         <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <div className="inline-flex p-4 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl mb-4 shadow-lg relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                                <div className="inline-flex p-4 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
                                     <Sparkles className="text-white relative z-10" size={32} />
                                 </div>
                                 <h2 className="text-3xl font-black text-white mb-2">Create Account</h2>
@@ -203,7 +203,7 @@ export default function SignupPage() {
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 {/* Full Name */}
                                 <div className="group">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-purple-400">
                                         <User size={16} />
                                         Full Name
                                     </label>
@@ -216,10 +216,10 @@ export default function SignupPage() {
                                             onFocus={() => setFocusedField('fullName')}
                                             onBlur={() => setFocusedField(null)}
                                             placeholder="Enter your full name"
-                                            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
+                                            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-purple-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
                                         />
                                         {focusedField === 'fullName' && (
-                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
+                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
                                     {errors.fullName && <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>}
@@ -227,7 +227,7 @@ export default function SignupPage() {
 
                                 {/* Email */}
                                 <div className="group">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-purple-400">
                                         <Mail size={16} />
                                         Email Address
                                     </label>
@@ -240,10 +240,10 @@ export default function SignupPage() {
                                             onFocus={() => setFocusedField('email')}
                                             onBlur={() => setFocusedField(null)}
                                             placeholder="your@email.com"
-                                            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
+                                            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-purple-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
                                         />
                                         {focusedField === 'email' && (
-                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
+                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
                                     {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
@@ -251,7 +251,7 @@ export default function SignupPage() {
 
                                 {/* Password */}
                                 <div className="group">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-purple-400">
                                         <Lock size={16} />
                                         Password
                                     </label>
@@ -264,7 +264,7 @@ export default function SignupPage() {
                                             onFocus={() => setFocusedField('password')}
                                             onBlur={() => setFocusedField(null)}
                                             placeholder="Create a strong password"
-                                            className="w-full px-4 py-3 pr-12 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
+                                            className="w-full px-4 py-3 pr-12 bg-white/5 border-2 border-white/10 rounded-xl focus:border-purple-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
                                         />
                                         <button
                                             type="button"
@@ -274,7 +274,7 @@ export default function SignupPage() {
                                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
                                         {focusedField === 'password' && (
-                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
+                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
                                     {formData.password && (
@@ -290,7 +290,7 @@ export default function SignupPage() {
 
                                 {/* Confirm Password */}
                                 <div className="group">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-purple-400">
                                         <Lock size={16} />
                                         Confirm Password
                                     </label>
@@ -303,7 +303,7 @@ export default function SignupPage() {
                                             onFocus={() => setFocusedField('confirmPassword')}
                                             onBlur={() => setFocusedField(null)}
                                             placeholder="Confirm your password"
-                                            className="w-full px-4 py-3 pr-12 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
+                                            className="w-full px-4 py-3 pr-12 bg-white/5 border-2 border-white/10 rounded-xl focus:border-purple-500 focus:bg-white/10 text-white placeholder-slate-400 transition-all duration-300 outline-none"
                                         />
                                         <button
                                             type="button"
@@ -313,7 +313,7 @@ export default function SignupPage() {
                                             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
                                         {focusedField === 'confirmPassword' && (
-                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 -z-10 blur-xl"></div>
+                                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 -z-10 blur-xl"></div>
                                         )}
                                     </div>
                                     {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
@@ -321,7 +321,7 @@ export default function SignupPage() {
 
                                 {/* Role */}
                                 <div className="group">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-blue-400">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2 transition-all group-focus-within:text-purple-400">
                                         <Briefcase size={16} />
                                         Your Role
                                     </label>
@@ -329,7 +329,7 @@ export default function SignupPage() {
                                         name="role"
                                         value={formData.role}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-blue-500 focus:bg-white/10 text-white transition-all duration-300 outline-none cursor-pointer"
+                                        className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-xl focus:border-purple-500 focus:bg-white/10 text-white transition-all duration-300 outline-none cursor-pointer"
                                     >
                                         <option value="" className="bg-slate-900">Select your role</option>
                                         <option value="student" className="bg-slate-900">🎓 Student</option>
@@ -349,7 +349,7 @@ export default function SignupPage() {
                                             <label
                                                 key={type}
                                                 className={`relative flex items-center justify-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${formData.accountType === type
-                                                    ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/30'
+                                                    ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/30'
                                                     : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                                     }`}
                                             >
@@ -364,7 +364,7 @@ export default function SignupPage() {
                                                 <span className="text-2xl">{type === 'personal' ? '👤' : '🏢'}</span>
                                                 <span className="text-white font-semibold capitalize">{type}</span>
                                                 {formData.accountType === type && (
-                                                    <CheckCircle2 className="absolute top-2 right-2 text-blue-400" size={20} />
+                                                    <CheckCircle2 className="absolute top-2 right-2 text-purple-400" size={20} />
                                                 )}
                                             </label>
                                         ))}
@@ -382,7 +382,7 @@ export default function SignupPage() {
                                             <label
                                                 key={interest.name}
                                                 className={`relative flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all duration-300 group ${formData.interests.includes(interest.name)
-                                                    ? 'border-blue-500 bg-blue-500/10'
+                                                    ? 'border-purple-500 bg-purple-500/10'
                                                     : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                                                     }`}
                                             >
@@ -397,7 +397,7 @@ export default function SignupPage() {
                                                 <span className="text-xl">{interest.icon}</span>
                                                 <span className="text-white text-sm font-semibold">{interest.name}</span>
                                                 {formData.interests.includes(interest.name) && (
-                                                    <CheckCircle2 className="absolute top-2 right-2 text-blue-400" size={16} />
+                                                    <CheckCircle2 className="absolute top-2 right-2 text-purple-400" size={16} />
                                                 )}
                                             </label>
                                         ))}
@@ -414,12 +414,12 @@ export default function SignupPage() {
                                             onChange={handleChange}
                                             className="sr-only peer"
                                         />
-                                        <div className="w-5 h-5 border-2 border-white/20 rounded bg-white/5 peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all duration-300 flex items-center justify-center">
+                                        <div className="w-5 h-5 border-2 border-white/20 rounded bg-white/5 peer-checked:border-purple-500 peer-checked:bg-purple-500 transition-all duration-300 flex items-center justify-center">
                                             {formData.terms && <CheckCircle2 className="text-white" size={14} />}
                                         </div>
                                     </div>
                                     <span className="text-sm text-slate-300 leading-relaxed">
-                                        I agree to the <span className="text-blue-400 font-semibold">Terms</span> and <span className="text-blue-400 font-semibold">Privacy Policy</span>
+                                        I agree to the <span className="text-purple-400 font-semibold">Terms</span> and <span className="text-purple-400 font-semibold">Privacy Policy</span>
                                     </span>
                                 </label>
                                 {errors.terms && <p className="text-red-400 text-sm mt-1">{errors.terms}</p>}
@@ -437,8 +437,8 @@ export default function SignupPage() {
                                     disabled={loading}
                                     className="relative w-full group overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 rounded-xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-                                    <div className="relative px-6 py-4 bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 rounded-xl flex items-center justify-center gap-3 font-bold text-white text-lg shadow-2xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-blue-500/50">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
+                                    <div className="relative px-6 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-xl flex items-center justify-center gap-3 font-bold text-white text-lg shadow-2xl transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-purple-500/50">
                                         {loading ? (
                                             <>
                                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -459,7 +459,7 @@ export default function SignupPage() {
                             <div className="mt-6 text-center">
                                 <p className="text-slate-400">
                                     Already have an account?{' '}
-                                    <Link href="/login" className="text-blue-400 hover:text-blue-300 font-bold transition-colors underline decoration-blue-400/50 hover:decoration-blue-300">
+                                    <Link href="/login" className="text-purple-400 hover:text-purple-300 font-bold transition-colors underline decoration-purple-400/50 hover:decoration-purple-300">
                                         Sign In
                                     </Link>
                                 </p>
