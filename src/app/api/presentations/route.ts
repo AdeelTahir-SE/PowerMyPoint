@@ -32,7 +32,20 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ data });
+        // Transform each presentation to flat structure
+        const transformedData = data.map((presentation: any) => ({
+            presentation_id: presentation.presentation_id,
+            title: presentation.presentation_data?.title || 'Untitled',
+            description: presentation.presentation_data?.description || '',
+            slides: presentation.presentation_data?.slides || [],
+            user_id: presentation.owner_id,
+            is_public: presentation.presentation_data?.is_public ?? true,
+            views: presentation.PresentationStats?.[0]?.likes || 0,
+            created_at: presentation.created_at,
+            updated_at: presentation.updated_at,
+        }));
+
+        return NextResponse.json({ data: transformedData });
     } catch (error) {
         console.error('Error fetching presentations:', error);
         return NextResponse.json(

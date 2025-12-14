@@ -6,9 +6,11 @@ import { Presentation } from "@/types/types";
 import { useEffect, useState } from "react";
 import { Sparkles, Search } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
     const { user } = useAuth();
+    const router = useRouter();
     const [presentations, setPresentations] = useState<Presentation[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -52,8 +54,9 @@ export default function Page() {
             const result = await response.json();
 
             if (response.ok) {
-                setPresentations([result.data, ...presentations]);
-                setPrompt('');
+                // Navigate to the newly created presentation
+                const presentationId = result.data.presentation_id;
+                router.push(`/presentations/${presentationId}`);
             } else {
                 setError(result.error || 'Failed to generate presentation');
             }

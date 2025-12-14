@@ -26,7 +26,20 @@ export async function GET(
             );
         }
 
-        return NextResponse.json({ data });
+        // Transform presentation_data to flat structure
+        const transformedData = {
+            presentation_id: data.presentation_id,
+            title: data.presentation_data?.title || 'Untitled',
+            description: data.presentation_data?.description || '',
+            slides: data.presentation_data?.slides || [],
+            user_id: data.owner_id,
+            is_public: data.presentation_data?.is_public ?? true,
+            views: data.PresentationStats?.[0]?.likes || 0,
+            created_at: data.created_at,
+            updated_at: data.updated_at,
+        };
+
+        return NextResponse.json({ data: transformedData });
     } catch (error) {
         console.error('Error fetching presentation:', error);
         return NextResponse.json(
