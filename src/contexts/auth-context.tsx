@@ -41,22 +41,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signUp = async (email: string, password: string, metadata?: any) => {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: metadata,
             },
         });
-        return { error };
+
+        if (error) {
+            return { error };
+        }
+
+        // Create user record in User table
+        if (data.user) {
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: data.user.id,
+                        email: email,
+                        full_name: metadata?.full_name,
+                        role: metadata?.role,
+                        account_type: metadata?.account_type,
+                        interests: metadata?.interests,
+                        newsletter: metadata?.newsletter,
+                    }),
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to create user in User table');
+                }
+            } catch (err) {
+                console.error('Error creating user record:', err);
+            }
+        }
+
+        return { error: null };
     };
 
     const signIn = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
-        return { error };
+
+        if (error) {
+            return { error };
+        }
+
+        // Verify user exists in User table
+        if (data.user) {
+            try {
+                const response = await fetch(`/api/users?userId=${data.user.id}`);
+
+                if (!response.ok) {
+                    // User doesn't exist in User table
+                    await supabase.auth.signOut();
+                    return {
+                        error: {
+                            message: 'User account not found. Please sign up first.'
+                        }
+                    };
+                }
+            } catch (err) {
+                console.error('Error verifying user:', err);
+                await supabase.auth.signOut();
+                return {
+                    error: {
+                        message: 'Failed to verify user account'
+                    }
+                };
+            }
+        }
+
+        return { error: null };
     };
 
     const signOut = async () => {

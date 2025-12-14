@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
-        if (isPublic) {
-            query = query.eq('presentation_data->>is_public', 'true');
-        }
+        // if (isPublic) {
+        //     query = query.eq('presentation_data->>is_public', 'true');
+        // }
 
         const { data, error } = await query;
 
@@ -32,10 +32,11 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        console.log(data)
         // Transform each presentation to flat structure
         const transformedData = data.map((presentation: any) => ({
             presentation_id: presentation.presentation_id,
-            title: presentation.presentation_data?.title || 'Untitled',
+            title: presentation?.prompts?.join(" ") || 'Untitled',
             description: presentation.presentation_data?.description || '',
             slides: presentation.presentation_data?.slides || [],
             user_id: presentation.owner_id,

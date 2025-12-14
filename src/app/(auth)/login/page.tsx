@@ -42,7 +42,7 @@ export default function LoginPage() {
 
         try {
             const { error } = await signIn(formData.email, formData.password);
-
+            console.log(error)
             if (error) {
                 setErrors({ submit: error.message });
             } else {
