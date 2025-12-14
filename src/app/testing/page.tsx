@@ -1,11 +1,9 @@
-"use client"
-// pages/sports-presentation.js
-import React from "react";
+// app/page.tsx
+'use client';
 
-// ----------------------------
-// TailSlideLang DSL as string
-// ----------------------------
-const dslText = `
+import React from 'react';
+
+const dslString = `
 PRESENTATION {
   id = "sports-demo-001";
   title = "Importance of Sports and Games";
@@ -74,82 +72,86 @@ PRESENTATION {
   ];
 };
 `;
-function parsePresentationDSL(dslText: string): PresentationData {
-    const titleMatch = dslText.match(/title\s*=\s*"([^"]+)"/);
-    const title = titleMatch ? titleMatch[1] : "Untitled";
 
-    const slidesMatch = dslText.match(/slides\s*=\s*\[([\s\S]*?)\];/);
-    if (!slidesMatch) return { title, slides: [] };
+// DSL -> HTML string parser
+function dslToHtml(dsl: string): string {
+    dsl = dsl.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 
-    let slidesText = slidesMatch[1];
+    function parseBlock(str: string): string {
+        let html = '';
+        const regex = /(\w+)\s*=\s*(\[.*?\]|".*?"|\w+)\s*;|(\w+)\s*{([^{}]*({[^{}]*})*[^{}]*)}/g;
+        let match: RegExpExecArray | null;
 
-    slidesText = slidesText
-        .replace(/(\w+)\s*\{/g, '"$1":{')
-        .replace(/content\s*=\s*"([^"]*)"/g, '"content":"$1"')
-        .replace(/classes\s*=\s*"([^"]*)"/g, '"classes":"$1"')
-        .replace(/children\s*=\s*\[/g, '"children":[')
-        .replace(/;/g, ',')
-        .replace(/,\s*}/g, '}')
-        .replace(/,\s*]/g, ']');
+        while ((match = regex.exec(str)) !== null) {
+            if (match[1]) {
+                // key = value; (arrays are handled recursively)
+                const key = match[1].toLowerCase();
+                let value = match[2].trim();
 
-    slidesText = `[${slidesText}]`;
+                if (value.startsWith('[') && value.endsWith(']')) {
+                    value = value.slice(1, -1).trim();
+                    const arrayRegex = /(\w+\s*{[^{}]*({[^{}]*})*[^{}]*})/g;
+                    let arrayMatch: RegExpExecArray | null;
+                    while ((arrayMatch = arrayRegex.exec(value)) !== null) {
+                        html += parseBlock(arrayMatch[1]);
+                    }
+                }
+            } else if (match[3]) {
+                // tag { ... }
+                const tag = match[3].toLowerCase();
+                const inner = match[4].trim();
 
-    let slides: SlideElement[] = [];
-    try {
-        console.log(slidesText.replace("\"SLIDE\":", ""))
-        slides = JSON.parse(slidesText.replace("\"SLIDE\":", ""));
-    } catch (err) {
-        console.error("Failed to parse slides:", err);
+                const classMatch = inner.match(/classes\s*=\s*"([^"]*)"/);
+                const classes = classMatch ? classMatch[1] : '';
+
+                const contentMatch = inner.match(/content\s*=\s*"([^"]*)"/);
+                const content = contentMatch ? contentMatch[1] : '';
+
+                const childrenMatch = inner.match(/children\s*=\s*\[(.*)\]/);
+                let childrenHtml = '';
+                if (childrenMatch) {
+                    const childrenStr = childrenMatch[1].trim();
+                    const childRegex = /(\w+\s*{[^{}]*({[^{}]*})*[^{}]*})/g;
+                    let childMatch: RegExpExecArray | null;
+                    while ((childMatch = childRegex.exec(childrenStr)) !== null) {
+                        childrenHtml += parseBlock(childMatch[1]);
+                    }
+                }
+
+                const selfClosing = ['img', 'input', 'br', 'hr'];
+                if (selfClosing.includes(tag)) {
+                    html += `<${tag} class="${classes}" src="${content}" />`;
+                } else {
+                    html += `<${tag} class="${classes}">${content}${childrenHtml}</${tag}>`;
+                }
+            }
+        }
+
+        return html;
     }
-    console.log(title, slides)
-    return { title, slides };
+
+    const topMatch = dsl.match(/(\w+)\s*{(.+)}/);
+    if (!topMatch) throw new Error("Invalid DSL format");
+    const topContent = topMatch[2].trim();
+    return parseBlock(topContent);
 }
 
-// ----------------------------
-// Recursive Slide Renderer
-// ----------------------------
-function SlideElementRenderer({ element }: { element: SlideElement }) {
-    const tagName = Object.keys(element)[0];
-    const { content = "", classes = "", children = [] } = element[tagName];
-
-    const Tag = tagName as keyof JSX.IntrinsicElements;
-
-    if (tagName === "img") return <img src={content} className={classes} alt="" />;
-
-    return (
-        <Tag className={classes}>
-            {content}
-            {Array.isArray(children) &&
-                children.map((child, idx) => <SlideElementRenderer key={idx} element={child} />)}
-        </Tag>
-    );
-}
-
-function Slide({ slide }: { slide: SlideElement }) {
-    return (
-        <div className="p-6 border border-gray-300 rounded-lg mb-6 shadow-lg bg-white">
-            {Object.keys(slide).map((key, idx) => (
-                <SlideElementRenderer key={idx} element={{ [key]: slide[key] }} />
-            ))}
-        </div>
-    );
-}
-
-// ----------------------------
-// Page Component
-// ----------------------------
 export default function Page() {
-    const { title, slides } = parsePresentationDSL(dslText);
+    const htmlString = dslToHtml(dslString);
 
     return (
-        <div className="space-y-12 max-w-5xl mx-auto p-4 bg-gray-50 min-h-screen">
-            <h1 className="text-6xl font-extrabold text-center text-indigo-600 mb-12">
-                {title}
+        <main className="bg-gray-100 min-h-screen py-12 flex flex-col items-center space-y-12">
+            <h1 className="text-4xl font-bold text-center mb-8">
+                Professional Sports Presentation
             </h1>
-
-            {slides.map((slide, idx) => (
-                <Slide key={idx} slide={slide} />
-            ))}
-        </div>
+            <div
+                dangerouslySetInnerHTML={{ __html: htmlString }}
+            />
+        </main>
     );
 }
+
+
+
+
+
