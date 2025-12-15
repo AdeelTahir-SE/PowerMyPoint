@@ -4,34 +4,136 @@ import React from "react";
 
 const dslString = `
 PRESENTATION {
-  id = "sports-demo-001";
-  title = "Importance of Sports and Games";
+  id = "conspiracy-theories-001";
+  title = "Understanding Conspiracy Theories";
   slides = [
     SLIDE {
-      h1 { content = "Welcome to Sports World"; classes = "text-5xl font-bold text-blue-600 mb-6 text-center"; };
-      p  { content = "Explore why sports and games are essential for physical, mental, and social well-being."; classes = "text-lg text-gray-800 mb-4 text-center"; };
-      img { content = "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=800&q=60"; classes = "mx-auto rounded-lg shadow-lg mt-4"; };
+      h1 { content = "Conspiracy Theories"; classes = "text-6xl font-bold text-red-600 mb-6 text-center"; };
+      p { content = "Exploring the psychology, history, and impact of conspiratorial thinking in modern society."; classes = "text-xl text-gray-800 mb-6 text-center max-w-4xl mx-auto"; };
+      img { content = "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=1200&q=80"; classes = "mx-auto rounded-xl shadow-2xl mt-6 w-full max-w-2xl h-64 object-cover"; };
       div {
-        classes = "mt-6 bg-gray-100 p-4 rounded-lg";
+        classes = "mt-8 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-xl shadow-lg";
         children = [
-          p { content = "Key Highlights:"; classes = "text-lg font-semibold mb-2"; };
+          p { content = "What We'll Explore:"; classes = "text-2xl font-bold mb-4 text-gray-800"; };
           ul {
-            classes = "list-disc pl-6 text-gray-700 space-y-1";
+            classes = "grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700";
             children = [
-              li { content = "Engage in physical activities"; classes = "text-base"; };
-              li { content = "Build teamwork skills"; classes = "text-base"; };
-              li { content = "Boost overall well-being"; classes = "text-base"; };
-              li {
-                content = "";
-                classes = "";
+              li { content = "What defines a conspiracy theory"; classes = "text-lg flex items-start"; };
+              li { content = "Famous historical examples"; classes = "text-lg flex items-start"; };
+              li { content = "Psychological factors involved"; classes = "text-lg flex items-start"; };
+              li { content = "Impact on society and culture"; classes = "text-lg flex items-start"; };
+            ];
+          };
+        ];
+      };
+    },
+
+    SLIDE {
+      h2 { content = "What is a Conspiracy Theory?"; classes = "text-5xl font-bold text-blue-700 mb-6"; };
+      div {
+        classes = "bg-white p-6 rounded-xl shadow-lg mb-6";
+        children = [
+          p { content = "A conspiracy theory is an explanation of events or situations that invokes a conspiracy by sinister and powerful groups, often politically motivated, when other explanations are more probable."; classes = "text-xl text-gray-800 leading-relaxed mb-4"; };
+        ];
+      };
+      ul {
+        classes = "space-y-4";
+        children = [
+          li {
+            content = "";
+            classes = "bg-blue-50 p-5 rounded-lg";
+            children = [
+              p { content = "Key Characteristics:"; classes = "text-xl font-semibold text-blue-800 mb-3"; };
+              ul {
+                classes = "list-disc pl-6 text-gray-700 space-y-2";
                 children = [
-                  p { content = "Sub-details:"; classes = "text-sm font-medium italic"; };
-                  ul {
-                    classes = "list-decimal pl-6 text-gray-600 space-y-1";
+                  li { content = "Resistant to falsification"; classes = "text-lg"; };
+                  li { content = "Pattern recognition in random events"; classes = "text-lg"; };
+                  li { content = "Assumes hidden motives and secret plans"; classes = "text-lg"; };
+                  li { content = "Often involves powerful entities"; classes = "text-lg"; };
+                ];
+              };
+            ];
+          };
+        ];
+      };
+      img { content = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
+    },
+
+    SLIDE {
+      h2 { content = "Famous Conspiracy Theories"; classes = "text-5xl font-bold text-purple-700 mb-6"; };
+      div {
+        classes = "grid grid-cols-1 md:grid-cols-2 gap-6";
+        children = [
+          div {
+            classes = "bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl shadow-lg";
+            children = [
+              h3 { content = "Historical Examples"; classes = "text-2xl font-bold text-purple-800 mb-4"; };
+              ul {
+                classes = "list-disc pl-6 text-gray-800 space-y-3";
+                children = [
+                  li { content = "Moon Landing Hoax (1969)"; classes = "text-lg"; };
+                  li { content = "JFK Assassination (1963)"; classes = "text-lg"; };
+                  li { content = "Area 51 and UFOs"; classes = "text-lg"; };
+                  li { content = "Illuminati and New World Order"; classes = "text-lg"; };
+                ];
+              };
+            ];
+          };
+          div {
+            classes = "bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-xl shadow-lg";
+            children = [
+              h3 { content = "Modern Era"; classes = "text-2xl font-bold text-indigo-800 mb-4"; };
+              ul {
+                classes = "list-disc pl-6 text-gray-800 space-y-3";
+                children = [
+                  li { content = "Flat Earth Theory"; classes = "text-lg"; };
+                  li { content = "5G Technology concerns"; classes = "text-lg"; };
+                  li { content = "QAnon movement"; classes = "text-lg"; };
+                  li { content = "Deep State narratives"; classes = "text-lg"; };
+                ];
+              };
+            ];
+          };
+        ];
+      };
+      img { content = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-2xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
+    },
+
+    SLIDE {
+      h2 { content = "Psychology Behind Conspiracies"; classes = "text-5xl font-bold text-green-700 mb-6"; };
+      div {
+        classes = "space-y-5";
+        children = [
+          div {
+            classes = "bg-green-50 p-6 rounded-xl shadow-lg";
+            children = [
+              h3 { content = "Why Do People Believe?"; classes = "text-2xl font-bold text-green-800 mb-4"; };
+              ul {
+                classes = "space-y-4";
+                children = [
+                  li {
+                    content = "";
+                    classes = "";
                     children = [
-                      li { content = "Cardio improvement"; classes = "text-sm"; };
-                      li { content = "Strength building"; classes = "text-sm"; };
-                      li { content = "Stress reduction"; classes = "text-sm"; };
+                      p { content = "Pattern Recognition"; classes = "text-lg font-semibold text-gray-800 mb-2"; };
+                      p { content = "Humans naturally seek patterns and connections, sometimes seeing them where none exist."; classes = "text-gray-700 pl-4"; };
+                    ];
+                  };
+                  li {
+                    content = "";
+                    classes = "";
+                    children = [
+                      p { content = "Need for Control"; classes = "text-lg font-semibold text-gray-800 mb-2"; };
+                      p { content = "Believing in conspiracies can provide a sense of understanding and control over complex events."; classes = "text-gray-700 pl-4"; };
+                    ];
+                  };
+                  li {
+                    content = "";
+                    classes = "";
+                    children = [
+                      p { content = "Social Identity"; classes = "text-lg font-semibold text-gray-800 mb-2"; };
+                      p { content = "Being part of a group with special knowledge can strengthen social bonds and identity."; classes = "text-gray-700 pl-4"; };
                     ];
                   };
                 ];
@@ -40,50 +142,73 @@ PRESENTATION {
           };
         ];
       };
+      img { content = "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
     },
 
     SLIDE {
-      h2 { content = "Physical Health Benefits"; classes = "text-4xl font-semibold text-green-600 mb-4"; };
-      ul {
-        classes = "list-disc pl-6 text-gray-800 space-y-2";
+      h2 { content = "Cognitive Biases at Play"; classes = "text-5xl font-bold text-orange-700 mb-6"; };
+      div {
+        classes = "grid grid-cols-1 md:grid-cols-2 gap-5";
         children = [
-          li { content = "Improves cardiovascular health"; classes = "text-lg"; };
-          li {
-            content = "Builds strength and flexibility"; classes = "text-lg";
+          div {
+            classes = "bg-orange-50 p-5 rounded-xl shadow-md";
             children = [
+              h3 { content = "Confirmation Bias"; classes = "text-xl font-bold text-orange-800 mb-2"; };
+              p { content = "Seeking information that confirms existing beliefs while ignoring contradictory evidence."; classes = "text-gray-700"; };
+            ];
+          };
+          div {
+            classes = "bg-red-50 p-5 rounded-xl shadow-md";
+            children = [
+              h3 { content = "Proportionality Bias"; classes = "text-xl font-bold text-red-800 mb-2"; };
+              p { content = "Believing big events must have big causes, not simple explanations."; classes = "text-gray-700"; };
+            ];
+          };
+          div {
+            classes = "bg-yellow-50 p-5 rounded-xl shadow-md";
+            children = [
+              h3 { content = "Clustering Illusion"; classes = "text-xl font-bold text-yellow-800 mb-2"; };
+              p { content = "Seeing patterns in random data or coincidences."; classes = "text-gray-700"; };
+            ];
+          };
+          div {
+            classes = "bg-amber-50 p-5 rounded-xl shadow-md";
+            children = [
+              h3 { content = "Fundamental Attribution Error"; classes = "text-xl font-bold text-amber-800 mb-2"; };
+              p { content = "Attributing events to intentional actions rather than circumstances."; classes = "text-gray-700"; };
+            ];
+          };
+        ];
+      };
+      img { content = "https://images.unsplash.com/photo-1617791160505-6f00504e3519?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-2xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
+    },
+
+    SLIDE {
+      h2 { content = "Societal Impact"; classes = "text-5xl font-bold text-red-700 mb-6"; };
+      div {
+        classes = "space-y-5";
+        children = [
+          div {
+            classes = "bg-red-50 p-6 rounded-xl shadow-lg";
+            children = [
+              h3 { content = "Negative Consequences"; classes = "text-2xl font-bold text-red-800 mb-4"; };
               ul {
-                classes = "list-circle pl-4 text-gray-600 space-y-1";
+                classes = "list-disc pl-6 text-gray-800 space-y-3";
                 children = [
-                  li { content = "Muscle toning"; classes = "text-sm"; };
-                  li { content = "Joint mobility"; classes = "text-sm"; };
+                  li { content = "Erosion of trust in institutions and experts"; classes = "text-lg"; };
+                  li { content = "Public health risks (vaccine hesitancy)"; classes = "text-lg"; };
+                  li { content = "Political polarization and radicalization"; classes = "text-lg"; };
+                  li { content = "Spread of misinformation online"; classes = "text-lg"; };
+                  li { content = "Violence and harassment against perceived enemies"; classes = "text-lg"; };
                 ];
               };
             ];
           };
-          li { content = "Boosts immunity"; classes = "text-lg"; };
-        ];
-      };
-      img { content = "https://images.unsplash.com/photo-1571019613575-2c52d5b8e103?auto=format&fit=crop&w=800&q=60"; classes = "w-2/3 mx-auto mt-4 rounded-lg shadow-md"; };
-    },
-
-    SLIDE {
-      h2 { content = "Mental Health Benefits"; classes = "text-4xl font-semibold text-purple-600 mb-4"; };
-      div {
-        classes = "grid grid-cols-1 md:grid-cols-2 gap-4";
-        children = [
-          ul {
-            classes = "list-disc pl-6 text-gray-800 space-y-2";
-            children = [
-              li { content = "Reduces stress and anxiety"; classes = "text-lg"; };
-              li { content = "Improves focus and cognitive skills"; classes = "text-lg"; };
-              li { content = "Boosts self-confidence and discipline"; classes = "text-lg"; };
-            ];
-          };
           div {
-            classes = "flex flex-col gap-2";
+            classes = "bg-blue-50 p-6 rounded-xl shadow-lg";
             children = [
-              img { content = "https://images.unsplash.com/photo-1554288246-6c81ef8d83b2?auto=format&fit=crop&w=800&q=60"; classes = "rounded-lg shadow-md"; };
-              p { content = "Regular mental exercises through sports enhance brain function."; classes = "text-gray-700"; };
+              h3 { content = "Historical Context"; classes = "text-2xl font-bold text-blue-800 mb-3"; };
+              p { content = "While some conspiracies have proven true (Watergate, MKUltra), the vast majority lack credible evidence and can cause real-world harm."; classes = "text-lg text-gray-700 leading-relaxed"; };
             ];
           };
         ];
@@ -91,28 +216,85 @@ PRESENTATION {
     },
 
     SLIDE {
-      h2 { content = "Social Benefits"; classes = "text-4xl font-semibold text-yellow-600 mb-4"; };
+      h2 { content = "Critical Thinking Tools"; classes = "text-5xl font-bold text-teal-700 mb-6"; };
       div {
-        classes = "flex flex-col gap-4";
+        classes = "bg-gradient-to-r from-teal-50 to-cyan-50 p-8 rounded-xl shadow-lg";
         children = [
-          p { content = "Sports promote teamwork, leadership, and communication skills."; classes = "text-lg text-gray-800 mb-2"; };
+          p { content = "How to Evaluate Claims:"; classes = "text-2xl font-bold text-teal-800 mb-6"; };
           ul {
-            classes = "list-disc pl-6 text-gray-800 space-y-2";
+            classes = "space-y-4";
             children = [
-              li { content = "Fosters team spirit"; classes = "text-lg"; };
-              li { content = "Encourages healthy competition"; classes = "text-lg"; };
-              li { content = "Strengthens community bonds"; classes = "text-lg"; };
-            ];
-          };
-          div {
-            classes = "flex gap-2 mt-2";
-            children = [
-              img { content = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; classes = "w-12 h-12"; };
-              img { content = "https://cdn-icons-png.flaticon.com/512/3135/3135712.png"; classes = "w-12 h-12"; };
+              li {
+                content = "";
+                classes = "flex items-start gap-3";
+                children = [
+                  p { content = "1."; classes = "text-2xl font-bold text-teal-600"; };
+                  p { content = "Check multiple credible sources"; classes = "text-lg text-gray-800"; };
+                ];
+              };
+              li {
+                content = "";
+                classes = "flex items-start gap-3";
+                children = [
+                  p { content = "2."; classes = "text-2xl font-bold text-teal-600"; };
+                  p { content = "Look for peer-reviewed research and expert consensus"; classes = "text-lg text-gray-800"; };
+                ];
+              };
+              li {
+                content = "";
+                classes = "flex items-start gap-3";
+                children = [
+                  p { content = "3."; classes = "text-2xl font-bold text-teal-600"; };
+                  p { content = "Ask: What evidence would disprove this claim?"; classes = "text-lg text-gray-800"; };
+                ];
+              };
+              li {
+                content = "";
+                classes = "flex items-start gap-3";
+                children = [
+                  p { content = "4."; classes = "text-2xl font-bold text-teal-600"; };
+                  p { content = "Consider Occam's Razor: simpler explanations are often correct"; classes = "text-lg text-gray-800"; };
+                ];
+              };
+              li {
+                content = "";
+                classes = "flex items-start gap-3";
+                children = [
+                  p { content = "5."; classes = "text-2xl font-bold text-teal-600"; };
+                  p { content = "Be aware of your own cognitive biases"; classes = "text-lg text-gray-800"; };
+                ];
+              };
             ];
           };
         ];
       };
+      img { content = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
+    },
+
+    SLIDE {
+      h2 { content = "Conclusion"; classes = "text-5xl font-bold text-indigo-700 mb-6 text-center"; };
+      div {
+        classes = "bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-xl shadow-2xl";
+        children = [
+          p { content = "Understanding conspiracy theories helps us navigate information in the digital age. While healthy skepticism is important, critical thinking and evidence-based reasoning are essential tools for distinguishing fact from fiction."; classes = "text-xl text-gray-800 leading-relaxed mb-6 text-center"; };
+          div {
+            classes = "bg-white p-6 rounded-lg shadow-md mt-6";
+            children = [
+              p { content = "Key Takeaways:"; classes = "text-2xl font-bold text-indigo-800 mb-4"; };
+              ul {
+                classes = "list-disc pl-6 text-gray-700 space-y-3";
+                children = [
+                  li { content = "Question claims, but rely on credible evidence"; classes = "text-lg"; };
+                  li { content = "Understand cognitive biases that affect judgment"; classes = "text-lg"; };
+                  li { content = "Promote media literacy and critical thinking"; classes = "text-lg"; };
+                  li { content = "Approach disagreements with empathy and patience"; classes = "text-lg"; };
+                ];
+              };
+            ];
+          };
+        ];
+      };
+      img { content = "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80"; classes = "w-full max-w-2xl mx-auto mt-6 rounded-xl shadow-md h-48 object-cover"; };
     }
   ];
 };
