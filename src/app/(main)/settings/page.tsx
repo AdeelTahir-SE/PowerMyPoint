@@ -118,8 +118,8 @@ export default function SettingsPage() {
                                     <div className="flex items-center gap-3">
                                         <Zap className="text-indigo-400" size={20} />
                                         <div>
-                                            <p className="text-sm font-semibold text-white">Anthropic API Status</p>
-                                            <p className="text-xs text-slate-400">Claude AI Integration</p>
+                                            <p className="text-sm font-semibold text-white">Google Gemini API Status</p>
+                                            <p className="text-xs text-slate-400">Gemini AI Integration</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                         <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
                             <p className="text-sm text-slate-400 mb-2">Technologies</p>
                             <div className="flex flex-wrap gap-2">
-                                {['Next.js', 'TypeScript', 'Tailwind CSS', 'Claude AI', 'Supabase'].map((tech) => (
+                                {['Next.js', 'TypeScript', 'Tailwind CSS', 'Google Gemini', 'Supabase'].map((tech) => (
                                     <span key={tech} className="px-3 py-1 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-purple-500/30 rounded-full text-sm text-purple-300 font-medium">
                                         {tech}
                                     </span>

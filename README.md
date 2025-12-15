@@ -1,16 +1,16 @@
 # PowerMyPoint 🎯
 
-An AI-powered presentation generator built with Next.js, Claude AI, and Supabase. Create professional presentations in seconds using natural language prompts.
+An AI-powered presentation generator built with Next.js, Google Gemini, and Supabase. Create professional presentations in seconds using natural language prompts.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.5.4-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)
-![Claude AI](https://img.shields.io/badge/Claude-3.5%20Sonnet-8b5cf6)
+![Google Gemini](https://img.shields.io/badge/Gemini-1.5%20Pro-4285f4)
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ecf8e)
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Generation**: Create presentations using Claude 3.5 Sonnet
+- 🤖 **AI-Powered Generation**: Create presentations using Google Gemini 1.5 Pro
 - 📊 **Smart Slide Creation**: Automatically generates 5-8 slides with structured content
 - ✏️ **Full Editor**: Edit titles, descriptions, and individual slides
 - 👁️ **Presentation Viewer**: Fullscreen viewer with keyboard navigation
@@ -24,7 +24,7 @@ An AI-powered presentation generator built with Next.js, Claude AI, and Supabase
 ### Prerequisites
 
 - Node.js 18+ installed
-- An [Anthropic API key](https://console.anthropic.com/)
+- A [Google Gemini API key](https://makersuite.google.com/app/apikey)
 - A [Supabase project](https://supabase.com/)
 
 ### Installation
@@ -44,8 +44,8 @@ An AI-powered presentation generator built with Next.js, Claude AI, and Supabase
    
    Create a `.env.local` file in the root directory:
    ```env
-   # Anthropic API Key (get from https://console.anthropic.com/)
-   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   # Google Gemini API Key (get from https://makersuite.google.com/app/apikey)
+   GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key_here
 
    # Supabase Configuration (get from your Supabase project settings)
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_here
@@ -110,7 +110,7 @@ PowerMyPoint/
 
 1. Navigate to the **Explore** page
 2. Enter a prompt in the creation form, e.g., "Create a presentation about climate change"
-3. Click **Create** and wait for Claude AI to generate your presentation
+3. Click **Create** and wait for Google Gemini to generate your presentation
 4. Your presentation will appear in the grid
 
 ### Viewing a Presentation
@@ -140,7 +140,7 @@ PowerMyPoint/
 
 **POST** `/api/generate`
 
-Generate a new presentation using Claude AI.
+Generate a new presentation using Google Gemini.
 
 **Request Body:**
 ```json
@@ -234,7 +234,7 @@ Delete a presentation permanently.
 - **Framework**: [Next.js 15.5.4](https://nextjs.org/) with App Router
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **AI**: [Anthropic Claude 3.5 Sonnet](https://www.anthropic.com/)
+- **AI**: [Google Gemini 1.5 Pro](https://ai.google.dev/)
 - **Database**: [Supabase](https://supabase.com/) (PostgreSQL)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Markdown**: [React Markdown](https://github.com/remarkjs/react-markdown)
@@ -267,7 +267,7 @@ The app can be deployed to any platform that supports Next.js:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Your Anthropic API key | Yes |
+| `GOOGLE_GEMINI_API_KEY` | Your Google Gemini API key | Yes |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
 
@@ -285,7 +285,7 @@ If you encounter any issues:
 
 1. Check that all environment variables are set correctly
 2. Ensure the database schema has been run in Supabase
-3. Verify your Anthropic API key is valid
+3. Verify your Google Gemini API key is valid
 4. Check the browser console for errors
 
 ## 🎯 Roadmap
@@ -300,4 +300,4 @@ If you encounter any issues:
 
 ---
 
-Built with ❤️ using Next.js, Claude AI, and Supabase
+Built with ❤️ using Next.js, Google Gemini, and Supabase
