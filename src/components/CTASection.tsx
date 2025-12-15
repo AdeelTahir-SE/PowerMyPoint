@@ -1,36 +1,28 @@
+"use client";
 import React from 'react';
+import { BackgroundBeams } from "./ui/background-beams";
 
-interface CTASectionProps {
-  className?: string;
-}
-
-export const CTASection: React.FC<CTASectionProps> = ({ className = '' }) => {
+export const CTASection = () => {
   return (
-    <section className={`w-full px-4 py-12 sm:px-6 sm:py-16 md:py-20 lg:py-24 xl:py-32 ${className}`}>
-      <div className="mx-auto max-w-4xl">
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl py-12 sm:py-16 px-6 sm:px-8 text-center">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-grid-slate-900/10 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
-          
-          {/* Content */}
-          <div className="relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white md:text-4xl">
-              Ready to transform your presentations?
-            </h2>
-            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-indigo-100 px-4">
-              Join thousands of professionals creating stunning presentations with PowerMyPoint.
-            </p>
-            <div className="mt-6 sm:mt-8">
-              <a
-                className="inline-flex h-11 sm:h-12 items-center justify-center rounded-lg bg-white px-6 sm:px-8 text-sm sm:text-base font-bold text-primary shadow-lg transition-all hover:bg-slate-100 hover:scale-105"
-                href="#"
-              >
-                Get Started Free
-              </a>
-            </div>
-          </div>
+    <div className="h-[30rem] w-full rounded-md bg-slate-950 relative flex flex-col items-center justify-center antialiased">
+      <div className="max-w-2xl mx-auto p-4">
+        <h1 className="relative z-10 text-4xl md:text-7xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600  text-center font-sans font-bold">
+          Ready to present?
+        </h1>
+        <p></p>
+        <p className="text-neutral-500 max-w-lg mx-auto my-4 text-sm text-center relative z-10">
+          Join thousands of professionals creating stunning presentations with PowerMyPoint. Get started today and unleash your ideas.
+        </p>
+        <div className="flex justify-center mt-8 relative z-10">
+          <a
+            className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-bold text-black shadow-lg hover:scale-105 transition-transform"
+            href="/explore"
+          >
+            Get Started Free
+          </a>
         </div>
       </div>
-    </section>
+      <BackgroundBeams />
+    </div>
   );
 };

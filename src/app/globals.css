@@ -27,18 +27,23 @@ body {
 
 /* Black Water Effect Animations */
 @keyframes water-flow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0) translateY(0) scale(1);
     opacity: 0.3;
   }
+
   25% {
     transform: translateX(10px) translateY(-10px) scale(1.05);
     opacity: 0.5;
   }
+
   50% {
     transform: translateX(-5px) translateY(5px) scale(0.95);
     opacity: 0.4;
   }
+
   75% {
     transform: translateX(15px) translateY(-5px) scale(1.02);
     opacity: 0.6;
@@ -50,6 +55,7 @@ body {
     transform: scale(0.8);
     opacity: 1;
   }
+
   100% {
     transform: scale(2.5);
     opacity: 0;
@@ -57,9 +63,12 @@ body {
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(-20px) rotate(5deg);
   }
@@ -69,15 +78,19 @@ body {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.2);
   }
+
   50% {
     box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.3);
   }
@@ -120,7 +133,7 @@ body {
   width: 200%;
   height: 200%;
   background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 70% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+    radial-gradient(circle at 70% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
   animation: water-flow 20s ease-in-out infinite;
   pointer-events: none;
 }
@@ -133,7 +146,7 @@ body {
   width: 200%;
   height: 200%;
   background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 50% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 50% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
   animation: water-flow 25s ease-in-out infinite reverse;
   pointer-events: none;
 }
@@ -155,12 +168,10 @@ body {
 
 /* Shimmer Effect */
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
 }
@@ -214,4 +225,14 @@ body {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 92, 246, 0.7);
+}
+
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 0.5rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
 }
