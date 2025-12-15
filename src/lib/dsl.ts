@@ -110,23 +110,28 @@ function parseElement(content: string): string {
 function parseAttributes(inner: string): { classes?: string; content?: string; childrenHtml?: string } {
     const attrs: { classes?: string; content?: string; childrenHtml?: string } = {};
 
-    // Extract classes
-    const classesMatch = inner.match(/classes\s*=\s*"([^"]*)"/);
-    if (classesMatch) attrs.classes = classesMatch[1];
-
-    // Extract content
-    // We need to be careful with content that might contain quotes escaped or not, 
-    // but for now simple quote matching.
-    // The DSL seems to use double quotes.
-    const contentMatch = inner.match(/content\s*=\s*"([^"]*)"/);
-    if (contentMatch) attrs.content = contentMatch[1];
+    let attributeSearchSpace = inner;
 
     // Extract children array
+    // We assume children is at the end of the block as per the DSL structure seen so far
+    // and consistent with the previous regex anchor.
+    // We extract it first and remove it to prevent 'content' regex from matching inside children.
     const childrenMatch = inner.match(/children\s*=\s*\[([\s\S]*)\]\s*;?\s*$/);
     if (childrenMatch) {
         const childrenContent = childrenMatch[1];
         attrs.childrenHtml = parseElement(childrenContent);
+
+        // Remove the children block from the search space
+        attributeSearchSpace = inner.replace(childrenMatch[0], "");
     }
+
+    // Extract classes
+    const classesMatch = attributeSearchSpace.match(/classes\s*=\s*"([^"]*)"/);
+    if (classesMatch) attrs.classes = classesMatch[1];
+
+    // Extract content
+    const contentMatch = attributeSearchSpace.match(/content\s*=\s*"([^"]*)"/);
+    if (contentMatch) attrs.content = contentMatch[1];
 
     return attrs;
 }
