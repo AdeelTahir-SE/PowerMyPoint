@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export const HeroSection: React.FC = () => {
   return (
-    <div className="relative w-full overflow-hidden pt-[40px]">
+    <div className="relative bg-black w-full overflow-hidden pt-[40px]">
       <WavyBackground className="max-w-4xl mx-auto pb-40" containerClassName='min-h-[90vh]' colors={["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"]} waveWidth={50} backgroundFill="black" blur={10} speed="fast" waveOpacity={0.5}>
         <div className="flex flex-col items-center justify-center text-center px-4 md:px-6 relative z-10">
           <h1 className="text-4xl md:text-7xl font-bold text-white mb-6 tracking-tight">

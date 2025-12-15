@@ -1,109 +1,75 @@
-import React from 'react';
+"use client";
+import React from "react";
+import { BackgroundGradient } from "./ui/background-gradient";
+import { CheckCircle2 } from "lucide-react";
 
-interface PricingPlan {
-  name: string;
-  price: number;
-  period: string;
-  features: string[];
-  buttonText: string;
-  buttonStyle: 'primary' | 'secondary';
-  isFeatured?: boolean;
-}
-
-interface PricingSectionProps {
-  className?: string;
-}
-
-const plans: PricingPlan[] = [
-  {
-    name: 'Free',
-    price: 0,
-    period: '/month',
-    features: ['Basic features', 'Limited templates', 'Standard support'],
-    buttonText: 'Get Started Free',
-    buttonStyle: 'secondary',
-  },
-  {
-    name: 'Premium',
-    price: 19,
-    period: '/month',
-    features: ['All features', 'Unlimited templates', 'Priority support', 'Custom branding'],
-    buttonText: 'Upgrade Now',
-    buttonStyle: 'primary',
-    isFeatured: true,
-  },
-];
-
-export const PricingSection: React.FC<PricingSectionProps> = ({ className = '' }) => {
+export const PricingSection = () => {
   return (
-    <section className={`w-full bg-background-light px-4 py-12 dark:bg-surface-dark sm:px-6 sm:py-16 md:py-20 lg:py-24 xl:py-32 ${className}`}>
-      <div className="mx-auto max-w-5xl">
-        {/* Section Header */}
-        <div className="mb-10 sm:mb-12 md:mb-16 text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-light dark:text-white md:text-4xl">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="mt-3 sm:mt-4 max-w-3xl mx-auto text-base sm:text-lg text-slate-600 dark:text-slate-400 px-4">
-            Choose the plan that&apos;s right for you.
-          </p>
-        </div>
-
-        {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative flex flex-col gap-5 sm:gap-6 rounded-xl p-6 sm:p-8 transition-all duration-300 ${plan.isFeatured
-                  ? 'border-2 border-primary bg-white shadow-2xl shadow-primary/20 dark:bg-surface-dark'
-                  : 'border border-subtle-light/50 bg-white/50 dark:border-subtle-dark/50 dark:bg-surface-dark/50'
-                }`}
-            >
-              {/* Featured Badge */}
-              {plan.isFeatured && (
-                <div className="absolute -top-3 sm:-top-4 right-6 sm:right-8 rounded-full bg-primary px-3 sm:px-4 py-1 text-xs sm:text-sm font-bold text-white">
-                  Best Value
-                </div>
-              )}
-
-              {/* Plan Info */}
-              <div className="flex flex-col gap-2">
-                <h3 className="text-xl sm:text-2xl font-bold text-text-light dark:text-white">
-                  {plan.name}
-                </h3>
-                <p className="flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-text-light dark:text-white">
-                    ${plan.price}
-                  </span>
-                  <span className="text-sm sm:text-base text-slate-500 dark:text-slate-400">
-                    {plan.period}
-                  </span>
-                </p>
+    <section className="w-full bg-slate-950 py-20 px-4">
+      <div className="max-w-5xl mx-auto px-8">
+        <h2 className="text-3xl font-bold text-center mb-8 text-white">
+          Simple, Transparent Pricing
+        </h2>
+        <p className="text-center text-slate-400 mb-16 max-w-2xl mx-auto">
+          Choose the plan that's right for you. No hidden fees.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <BackgroundGradient className="rounded-[22px] max-w-sm p-4 sm:p-10 bg-white dark:bg-zinc-900 h-full">
+            <div className="flex flex-col h-full">
+              <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200">
+                Free Plan
+              </p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Perfect for getting started with AI presentations.
+              </p>
+              <p className="text-4xl font-bold text-black dark:text-white mt-6 mb-6">
+                $0 <span className="text-base font-normal text-neutral-600 dark:text-neutral-400">/month</span>
+              </p>
+              <div className="flex-1">
+                <ul className="space-y-4 mb-8">
+                  {['Basic features', 'Limited templates', 'Standard support'].map((feature) => (
+                    <li key={feature} className="flex items-center text-neutral-600 dark:text-neutral-300">
+                      <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              {/* CTA Button */}
-              <a
-                className={`inline-flex h-11 sm:h-12 w-full items-center justify-center rounded-lg px-5 sm:px-6 text-sm sm:text-base font-semibold transition-all ${plan.buttonStyle === 'primary'
-                    ? 'bg-primary text-white shadow-lg hover:bg-primary-light hover:shadow-xl hover:-translate-y-px'
-                    : 'border border-subtle-light bg-transparent text-slate-700 shadow-sm hover:bg-slate-100 dark:border-subtle-dark dark:text-slate-300 dark:hover:bg-slate-800'
-                  }`}
-                href="#"
-              >
-                {plan.buttonText}
-              </a>
-
-              {/* Features List */}
-              <ul className="space-y-2 sm:space-y-3 text-slate-600 dark:text-slate-400">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-primary text-xl sm:text-2xl">
-                      check_circle
-                    </span>
-                    <span className="text-sm sm:text-base">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <button className="rounded-full px-4 py-2 text-white flex items-center space-x-1 bg-black mt-4 text-xs font-bold dark:bg-zinc-800">
+                <span>Get Started Free</span>
+              </button>
             </div>
-          ))}
+          </BackgroundGradient>
+
+          <BackgroundGradient className="rounded-[22px] max-w-sm p-4 sm:p-10 bg-white dark:bg-zinc-900 h-full">
+            <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center mt-4 mb-2">
+                <p className="text-base sm:text-xl text-black dark:text-neutral-200">
+                  Premium Plan
+                </p>
+                <span className="bg-zinc-700 text-white text-xs px-2 py-1 rounded-full">Most Popular</span>
+              </div>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Unlocked full potential with unlimited access.
+              </p>
+              <p className="text-4xl font-bold text-black dark:text-white mt-6 mb-6">
+                $19 <span className="text-base font-normal text-neutral-600 dark:text-neutral-400">/month</span>
+              </p>
+              <div className="flex-1">
+                <ul className="space-y-4 mb-8">
+                  {['All features', 'Unlimited templates', 'Priority support', 'Custom branding', 'Analytics'].map((feature) => (
+                    <li key={feature} className="flex items-center text-neutral-600 dark:text-neutral-300">
+                      <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button className="rounded-full px-4 py-2 text-white flex items-center space-x-1 bg-gradient-to-br from-indigo-500 to-purple-500 mt-4 text-xs font-bold shadow-lg shadow-indigo-500/20">
+                <span>Upgrade Now</span>
+              </button>
+            </div>
+          </BackgroundGradient>
         </div>
       </div>
     </section>
