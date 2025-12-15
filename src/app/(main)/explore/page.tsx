@@ -25,7 +25,7 @@ export default function Page() {
 
     const fetchPresentations = async () => {
         try {
-            const response = await fetch('/api/presentations?public=true');
+            const response = await fetch(`/api/presentations?public=true&uid=${user}&page=explore`);
             const data = await response.json();
             setPresentations(data.data || []);
         } catch (error) {
