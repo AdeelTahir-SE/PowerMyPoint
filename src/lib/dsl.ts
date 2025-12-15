@@ -135,3 +135,148 @@ function parseAttributes(inner: string): { classes?: string; content?: string; c
 
     return attrs;
 }
+
+// Helper to escape quotes in content
+function escapeQuotes(str: string): string {
+    return str.replace(/"/g, '\\"');
+}
+
+export function htmlToDsl(html: string): string {
+    if (typeof window === 'undefined') return ""; // Client-side only
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const root = doc.body.firstElementChild;
+
+    if (!root) return "";
+
+    function elementToDsl(el: Element): string {
+        const tagName = el.tagName.toLowerCase();
+        const classes = el.className;
+
+        let properties = "";
+
+        if (classes) {
+            properties += `classes = "${classes}"; `;
+        }
+
+        // Handle Image
+        if (tagName === 'img') {
+            const src = el.getAttribute('src');
+            if (src) {
+                properties += `content = "${src}"; `;
+            }
+        } else {
+            // Check if we have children (elements or significant text)
+            // We need to look at childNodes to capture text mixed with elements
+            const hasComplexChildren = Array.from(el.childNodes).some(node =>
+                node.nodeType === 1 || (node.nodeType === 3 && node.textContent?.trim())
+            );
+
+            if (hasComplexChildren) {
+                // Determine if it's purely a single text node (simple content) or mixed/multiple
+                const isSimpleText = el.childNodes.length === 1 && el.childNodes[0].nodeType === 3;
+
+                if (isSimpleText) {
+                    const text = el.textContent || "";
+                    if (text.trim()) {
+                        properties += `content = "${escapeQuotes(text)}"; `;
+                    }
+                } else {
+                    // Mixed or multiple children
+                    const childrenDsl = Array.from(el.childNodes)
+                        .map(node => {
+                            if (node.nodeType === 1) { // Element
+                                return elementToDsl(node as Element);
+                            } else if (node.nodeType === 3) { // Text
+                                const text = node.textContent || "";
+                                if (!text.trim()) return ""; // Skip whitespace
+                                // Represent text node as a span if it's loose text?
+                                // DSL might not support raw text in array. 
+                                // We wrap it in a generic span or div without classes?
+                                // Let's use span for inline text.
+                                return `span { content = "${escapeQuotes(text)}"; }`;
+                            }
+                            return "";
+                        })
+                        .filter(Boolean)
+                        .join(' ');
+
+                    if (childrenDsl) {
+                        properties += `children = [ ${childrenDsl} ]; `;
+                    } else {
+                        properties += `children = []; `;
+                    }
+                }
+            } else {
+                // Empty
+                properties += `children = []; `;
+            }
+        }
+
+        return `${tagName} { ${properties}};`;
+    }
+
+    return elementToDsl(root);
+}
+
+export function updateSlideInDsl(dsl: string, index: number, newSlideHtml: string): string {
+    const newSlideDsl = htmlToDsl(newSlideHtml);
+    if (!newSlideDsl) return dsl;
+
+    // We need to locate the Nth SLIDE block and replace it.
+    // We can reuse the parsing logic logic to find offsets.
+
+    const slidesMatch = dsl.match(/slides\s*=\s*\[([\s\S]*)\]\s*;?\s*}\s*;?\s*$/);
+    if (!slidesMatch) return dsl;
+
+    const slidesContent = slidesMatch[1];
+    const slidesArrayStart = dsl.indexOf(slidesContent);
+
+    // Iterate to find the start and end of the target slide
+    let depth = 0;
+    let slideCount = 0;
+    let startIndex = -1;
+    let endIndex = -1;
+    let inSlide = false;
+    let currentSlideStart = -1;
+
+    for (let i = 0; i < slidesContent.length; i++) {
+        if (!inSlide && slidesContent.substring(i, i + 5) === "SLIDE") {
+            inSlide = true;
+            currentSlideStart = i;
+            i += 4;
+            continue;
+        }
+
+        if (inSlide) {
+            if (slidesContent[i] === "{") depth++;
+            if (slidesContent[i] === "}") depth--;
+
+            if (depth === 0 && slidesContent[i] === "}") {
+                // End of a slide
+                if (slideCount === index) {
+                    startIndex = currentSlideStart;
+                    endIndex = i + 1; // Include the closing brace
+                    break;
+                }
+                slideCount++;
+                inSlide = false;
+            }
+        }
+    }
+
+    if (startIndex !== -1 && endIndex !== -1) {
+        const pre = slidesContent.substring(0, startIndex);
+        const post = slidesContent.substring(endIndex);
+        const newSlidesContent = pre + `SLIDE { ${newSlideDsl} }` + post;
+
+        // Reconstruct the full DSL
+        // Careful with where slidesContent came from. 
+        // It's safer to replace the range in the original string provided we have exact match.
+        // Or simpler: replace the slidesContent in the dsl string.
+        return dsl.replace(slidesContent, newSlidesContent);
+    }
+
+    return dsl;
+}

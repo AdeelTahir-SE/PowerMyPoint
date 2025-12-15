@@ -105,3 +105,12 @@ export interface GeneratePresentationRequest {
 export interface GeneratePresentationResponse {
   presentation: Presentation;
 }
+
+
+
+
+
+
+
+
+

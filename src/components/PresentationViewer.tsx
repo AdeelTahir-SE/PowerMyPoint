@@ -5,14 +5,16 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
-import { dslToSlides } from "@/lib/dsl";
+import { dslToSlides, htmlToDsl } from "@/lib/dsl";
 
 interface PresentationViewerProps {
     presentation: Presentation;
     onClose?: () => void;
+    editable?: boolean;
+    onEdit?: (index: number, newSlideDsl: string) => void;
 }
 
-export default function PresentationViewer({ presentation, onClose }: PresentationViewerProps) {
+export default function PresentationViewer({ presentation, onClose, editable, onEdit }: PresentationViewerProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +41,7 @@ export default function PresentationViewer({ presentation, onClose }: Presentati
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (editable && isDsl) return; // Don't capture keys if editing text
         if (e.key === 'ArrowRight') nextSlide();
         if (e.key === 'ArrowLeft') previousSlide();
         if (e.key === 'Escape') {
@@ -80,6 +83,19 @@ export default function PresentationViewer({ presentation, onClose }: Presentati
         };
     }, []);
 
+    const slide = slides[currentSlide];
+    const isDsl = typeof slide === 'string';
+
+    const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+        if (editable && onEdit && isDsl) {
+            const html = e.currentTarget.innerHTML;
+            const newDsl = htmlToDsl(html);
+            if (newDsl) {
+                onEdit(currentSlide, newDsl);
+            }
+        }
+    };
+
 
     if (totalSlides === 0) {
         return (
@@ -89,9 +105,6 @@ export default function PresentationViewer({ presentation, onClose }: Presentati
         );
     }
 
-    const slide = slides[currentSlide];
-    const isDsl = typeof slide === 'string';
-
     return (
         <div
             ref={containerRef}
@@ -99,7 +112,10 @@ export default function PresentationViewer({ presentation, onClose }: Presentati
             onKeyDown={handleKeyDown}
             tabIndex={0}
             // Ensure focus for key events
-            onClick={(e) => e.currentTarget.focus()}
+            onClick={(e) => {
+                // Only focus container if not clicking on editable content
+                if (!editable) e.currentTarget.focus();
+            }}
         >
             {/* Header - Hidden in fullscreen */}
             {!isFullscreen && (
@@ -145,8 +161,11 @@ export default function PresentationViewer({ presentation, onClose }: Presentati
             <div className={`absolute inset-0 flex items-center justify-center p-0 overflow-y-auto ${isFullscreen ? '' : 'top-16 bottom-16'}`}>
                 {isDsl ? (
                     <div
-                        className="w-full h-full"
+                        className="w-full h-full outline-none"
                         dangerouslySetInnerHTML={{ __html: slide as string }}
+                        contentEditable={editable}
+                        onBlur={handleBlur}
+                        suppressContentEditableWarning={true}
                     />
                 ) : (
                     <div className={`w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl p-12 overflow-y-auto ${isFullscreen ? 'h-full rounded-none' : 'h-full rounded-lg m-8'}`}>

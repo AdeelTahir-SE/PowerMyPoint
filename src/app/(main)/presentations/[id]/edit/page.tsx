@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import SlideEditor from "@/components/SlideEditor";
+import PresentationViewer from "@/components/PresentationViewer";
 import { ArrowLeft, Save, Plus, Eye } from "lucide-react";
 import Link from "next/link";
+import { updateSlideInDsl } from "@/lib/dsl";
 
 export default function EditPresentationPage() {
     const params = useParams();
@@ -18,8 +20,6 @@ export default function EditPresentationPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [slides, setSlides] = useState<Slide[]>([]);
-
-
     const [dsl, setDsl] = useState<string>('');
 
     useEffect(() => {
@@ -97,6 +97,11 @@ export default function EditPresentationPage() {
         const newSlides = [...slides];
         newSlides[index] = updatedSlide;
         setSlides(newSlides);
+    };
+
+    const handleVisualUpdate = (index: number, newSlideDsl: string) => {
+        const newDsl = updateSlideInDsl(dsl, index, newSlideDsl);
+        setDsl(newDsl);
     };
 
     const handleAddSlide = () => {
@@ -233,21 +238,43 @@ export default function EditPresentationPage() {
 
                 {/* Slides or DSL Editor */}
                 {dsl ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            DSL Editor
-                        </h2>
-                        <div className="bg-gray-50 dark:bg-gray-900 p-2 rounded-lg">
-                            <textarea
-                                value={dsl}
-                                onChange={(e) => setDsl(e.target.value)}
-                                className="w-full h-[600px] font-mono text-sm bg-transparent border-0 focus:ring-0 p-4 text-gray-800 dark:text-gray-200"
-                                spellCheck={false}
-                            />
+                    <div className="space-y-6">
+                        {/* Visual Editor */}
+                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Visual Editor
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Click on text to edit. Changes are synced with the DSL below.
+                            </p>
+                            <div className="h-[600px] border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                                {presentation && (
+                                    <PresentationViewer
+                                        presentation={{ ...presentation, dsl: dsl }}
+                                        editable={true}
+                                        onEdit={handleVisualUpdate}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        <p className="mt-2 text-sm text-gray-500">
-                            Edit the standard DSL to modify slides. Be careful with syntax.
-                        </p>
+
+                        {/* Raw DSL Editor */}
+                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                DSL Code
+                            </h2>
+                            <div className="bg-gray-50 dark:bg-gray-900 p-2 rounded-lg">
+                                <textarea
+                                    value={dsl}
+                                    onChange={(e) => setDsl(e.target.value)}
+                                    className="w-full h-[300px] font-mono text-sm bg-transparent border-0 focus:ring-0 p-4 text-gray-800 dark:text-gray-200"
+                                    spellCheck={false}
+                                />
+                            </div>
+                            <p className="mt-2 text-sm text-gray-500">
+                                Edit the standard DSL to modify slides. Be careful with syntax.
+                            </p>
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-6">
@@ -279,4 +306,3 @@ export default function EditPresentationPage() {
         </div>
     );
 }
-
