@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PresentationViewer from "@/components/PresentationViewer";
-import { ArrowLeft, Edit, Trash2, Download } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Download, FileAudio } from "lucide-react";
 import Link from "next/link";
+import { dslToSlides } from "@/lib/dsl";
+import pptxgen from "pptxgenjs";
 
 export default function PresentationDetailPage() {
     const params = useParams();
@@ -56,6 +58,68 @@ export default function PresentationDetailPage() {
             console.error('Error deleting presentation:', error);
             alert('Failed to delete presentation');
         }
+    };
+
+    const handlePPTExport = async () => {
+        if (!presentation) return;
+
+        const pres = new pptxgen();
+        pres.layout = 'LAYOUT_16x9';
+        pres.title = presentation.title;
+        pres.author = "PowerMyPoint";
+
+        const slideData = presentation.dsl
+            ? dslToSlides(presentation.dsl)
+            : presentation.slides || [];
+
+        slideData.forEach((slideItem: any, index: number) => {
+            const slide = pres.addSlide();
+
+            // Standard Slide Object
+            if (typeof slideItem === 'object' && slideItem.title) {
+                slide.addText(slideItem.title, { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '363636' });
+                slide.addText(slideItem.content, { x: 0.5, y: 1.5, w: '90%', h: 4, fontSize: 18, color: '666666' });
+                if (slideItem.imageUrl) {
+                    slide.addImage({ path: slideItem.imageUrl, x: 7, y: 1.5, w: 5, h: 3 });
+                }
+            }
+            // DSL HTML String
+            else if (typeof slideItem === 'string') {
+                // Parse HTML content to extract text and images
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(slideItem, 'text/html');
+
+                // Try to find Headings
+                const h1 = doc.querySelector('h1')?.textContent;
+                const h2 = doc.querySelector('h2')?.textContent;
+                const titleText = h1 || h2 || `Slide ${index + 1}`;
+
+                // Try to find Paragraphs / Lists
+                const paragraphs = Array.from(doc.querySelectorAll('p, li'))
+                    .map(p => p.textContent)
+                    .filter(t => t && t.trim().length > 0)
+                    .join('\n');
+
+                // Try to find Images
+                const img = doc.querySelector('img');
+                const imgSrc = img?.getAttribute('src');
+
+                // Add to Slide
+                slide.addText(titleText, { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '363636' });
+
+                if (paragraphs) {
+                    slide.addText(paragraphs, { x: 0.5, y: 1.5, w: '50%', h: 4, fontSize: 18, color: '666666' });
+                }
+
+                if (imgSrc) {
+                    // Check if it's a valid URL, otherwise pptxgen might fail. 
+                    // We assume Unsplash URLs or valid public URLs.
+                    slide.addImage({ path: imgSrc, x: 6, y: 1.5, w: 4, h: 3 });
+                }
+            }
+        });
+
+        pres.writeFile({ fileName: `${presentation.title.replace(/\s+/g, '-')}.pptx` });
     };
 
     const handleExport = () => {
@@ -123,12 +187,21 @@ export default function PresentationDetailPage() {
 
                         <div className="flex items-center gap-2">
                             <button
+                                onClick={handlePPTExport}
+                                className="flex items-center gap-2 px-4 py-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"
+                                title="Export as PowerPoint"
+                            >
+                                <FileAudio size={18} />
+                                Export PPT
+                            </button>
+
+                            <button
                                 onClick={handleExport}
                                 className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                                title="Export presentation"
+                                title="Export source file"
                             >
                                 <Download size={18} />
-                                Export
+                                Export Source
                             </button>
 
                             <Link
