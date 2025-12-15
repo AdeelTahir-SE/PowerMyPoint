@@ -4,12 +4,14 @@ import PresentationCard from "@/components/PresentationCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Presentation } from "@/types/types";
 import { useEffect, useState } from "react";
-import { TrendingUp, Flame, Eye, Award } from "lucide-react";
+import { TrendingUp, Flame, Eye, Award, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function TrendingsPage() {
     const [presentations, setPresentations] = useState<Presentation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const presentationsPerPage = 9;
 
     useEffect(() => {
         fetchTrendingPresentations();
@@ -36,6 +38,29 @@ export default function TrendingsPage() {
 
     const handleDelete = (id: string) => {
         setPresentations(presentations.filter(p => p?.presentation_id !== id));
+    };
+
+    // Calculate pagination
+    const totalPages = Math.ceil(presentations.length / presentationsPerPage);
+    const startIndex = (currentPage - 1) * presentationsPerPage;
+    const endIndex = startIndex + presentationsPerPage;
+    const currentPresentations = presentations.slice(startIndex, endIndex);
+
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const goToPreviousPage = () => {
+        if (currentPage > 1) {
+            goToPage(currentPage - 1);
+        }
+    };
+
+    const goToNextPage = () => {
+        if (currentPage < totalPages) {
+            goToPage(currentPage + 1);
+        }
     };
 
     return (
@@ -142,27 +167,111 @@ export default function TrendingsPage() {
 
                         {/* Presentations Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {presentations.map((presentation, index) => (
-                                <div key={presentation?.presentation_id} className="relative group">
-                                    {/* Rank badge for top 3 */}
-                                    {index < 3 && (
-                                        <div className="absolute -top-3 -left-3 z-20">
-                                            <div className="relative">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-lg opacity-60"></div>
-                                                <div className="relative bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shadow-2xl border-2 border-white/20">
-                                                    {index === 0 && <Award className="text-white" size={24} />}
-                                                    {index > 0 && (index + 1)}
+                            {currentPresentations.map((presentation, index) => {
+                                const globalIndex = startIndex + index;
+                                return (
+                                    <div key={presentation?.presentation_id} className="relative group">
+                                        {/* Rank badge for top 3 */}
+                                        {globalIndex < 3 && (
+                                            <div className="absolute -top-3 -left-3 z-20">
+                                                <div className="relative">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-lg opacity-60"></div>
+                                                    <div className="relative bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shadow-2xl border-2 border-white/20">
+                                                        {globalIndex === 0 && <Award className="text-white" size={24} />}
+                                                        {globalIndex > 0 && (globalIndex + 1)}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )}
-                                    <PresentationCard
-                                        Presentation={presentation}
-                                        onDelete={handleDelete}
-                                    />
-                                </div>
-                            ))}
+                                        )}
+                                        <PresentationCard
+                                            Presentation={presentation}
+                                            onDelete={handleDelete}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="mt-12 flex items-center justify-center gap-3">
+                                {/* Previous Button */}
+                                <button
+                                    onClick={goToPreviousPage}
+                                    disabled={currentPage === 1}
+                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                                        currentPage === 1
+                                            ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                                            : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
+                                    }`}
+                                >
+                                    <ChevronLeft size={20} />
+                                    <span className="hidden sm:inline">Previous</span>
+                                </button>
+
+                                {/* Page Numbers */}
+                                <div className="flex items-center gap-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        // Show first page, last page, current page, and pages around current
+                                        const showPage = 
+                                            page === 1 || 
+                                            page === totalPages || 
+                                            (page >= currentPage - 1 && page <= currentPage + 1);
+                                        
+                                        const showEllipsis = 
+                                            (page === currentPage - 2 && currentPage > 3) ||
+                                            (page === currentPage + 2 && currentPage < totalPages - 2);
+
+                                        if (showEllipsis) {
+                                            return (
+                                                <span key={page} className="text-slate-500 px-2">
+                                                    ...
+                                                </span>
+                                            );
+                                        }
+
+                                        if (!showPage) return null;
+
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => goToPage(page)}
+                                                className={`w-12 h-12 rounded-xl font-bold transition-all ${
+                                                    currentPage === page
+                                                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-500/30 scale-110'
+                                                        : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 hover:scale-105'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Next Button */}
+                                <button
+                                    onClick={goToNextPage}
+                                    disabled={currentPage === totalPages}
+                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                                        currentPage === totalPages
+                                            ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                                            : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
+                                    }`}
+                                >
+                                    <span className="hidden sm:inline">Next</span>
+                                    <ChevronRight size={20} />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Page Info */}
+                        {totalPages > 1 && (
+                            <div className="mt-6 text-center">
+                                <p className="text-slate-400 text-sm">
+                                    Showing {startIndex + 1}-{Math.min(endIndex, presentations.length)} of {presentations.length} presentations
+                                </p>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="text-center py-32">

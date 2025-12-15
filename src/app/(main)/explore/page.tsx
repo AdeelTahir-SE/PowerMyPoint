@@ -4,7 +4,7 @@ import PresentationCard from "@/components/PresentationCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Presentation } from "@/types/types";
 import { useEffect, useState } from "react";
-import { Sparkles, Search } from "lucide-react";
+import { Sparkles, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,8 @@ export default function Page() {
     const [creating, setCreating] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
 
     useEffect(() => {
         fetchPresentations();
@@ -70,6 +72,17 @@ export default function Page() {
 
     const handleDelete = (id: string) => {
         setPresentations(presentations.filter(p => p.presentation_id !== id));
+    };
+
+    // Pagination calculations
+    const totalPages = Math.ceil(presentations.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPresentations = presentations.slice(startIndex, endIndex);
+
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -154,15 +167,55 @@ export default function Page() {
                         <LoadingSpinner size={48} text="Loading presentations..." />
                     </div>
                 ) : presentations.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {presentations.map((presentation) => (
-                            <PresentationCard
-                                key={presentation.presentation_id}
-                                Presentation={presentation}
-                                onDelete={handleDelete}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {currentPresentations.map((presentation) => (
+                                <PresentationCard
+                                    key={presentation.presentation_id}
+                                    Presentation={presentation}
+                                    onDelete={handleDelete}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-center gap-2 mt-12">
+                                <button
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="p-3 glass-card border border-white/20 rounded-xl hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover-lift"
+                                >
+                                    <ChevronLeft className="text-white" size={20} />
+                                </button>
+
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const page = index + 1;
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => goToPage(page)}
+                                            className={`px-5 py-3 rounded-xl font-semibold transition-all hover-lift ${
+                                                currentPage === page
+                                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl'
+                                                    : 'glass-card border border-white/20 text-purple-200 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+
+                                <button
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="p-3 glass-card border border-white/20 rounded-xl hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover-lift"
+                                >
+                                    <ChevronRight className="text-white" size={20} />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="text-center py-32">
                         <div className="glass-card rounded-2xl p-12 max-w-md mx-auto">
