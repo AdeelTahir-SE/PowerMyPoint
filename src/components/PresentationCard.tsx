@@ -42,7 +42,9 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
     // Extract data from presentation_data JSON
     const title = Presentation?.title || 'Untitled Presentation';
     const description = Presentation?.description || 'No description available';
-    const slidesCount = Presentation?.slides?.length || 0;
+    const slidesCount = Presentation.dsl
+        ? (Presentation.dsl.match(/SLIDE\s*\{/g) || []).length
+        : (Presentation?.slides?.length || 0);
     const likes = (Presentation as any).PresentationStats?.[0]?.likes || 0;
 
     return (

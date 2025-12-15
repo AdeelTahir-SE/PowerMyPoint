@@ -32,6 +32,7 @@ export async function GET(
             title: data.presentation_data?.title || 'Untitled',
             description: data.presentation_data?.description || '',
             slides: data.presentation_data?.slides || [],
+            dsl: data.presentation_data?.dsl,
             user_id: data.owner_id,
             is_public: data.presentation_data?.is_public ?? true,
             views: data.PresentationStats?.[0]?.likes || 0,

@@ -75,6 +75,7 @@ export interface Presentation {
   title: string;
   description: string;
   slides: Slide[];
+  dsl?: string;
   user_id?: string;
   is_public: boolean;
   views: number;
