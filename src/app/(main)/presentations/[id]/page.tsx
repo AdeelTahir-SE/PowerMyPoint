@@ -61,14 +61,26 @@ export default function PresentationDetailPage() {
     const handleExport = () => {
         if (!presentation) return;
 
-        const dataStr = JSON.stringify(presentation, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${presentation.title.replace(/\s+/g, '-')}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
+        if (presentation.dsl) {
+            // Export as .pmp for DSL presentations
+            const dataBlob = new Blob([presentation.dsl], { type: 'text/plain' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${presentation.title.replace(/\s+/g, '-')}.pmp`;
+            link.click();
+            URL.revokeObjectURL(url);
+        } else {
+            // Fallback to JSON for standard presentations
+            const dataStr = JSON.stringify(presentation, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${presentation.title.replace(/\s+/g, '-')}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
     };
 
     if (loading) {

@@ -19,6 +19,9 @@ export default function EditPresentationPage() {
     const [description, setDescription] = useState('');
     const [slides, setSlides] = useState<Slide[]>([]);
 
+
+    const [dsl, setDsl] = useState<string>('');
+
     useEffect(() => {
         if (params.id) {
             fetchPresentation(params.id as string);
@@ -35,6 +38,7 @@ export default function EditPresentationPage() {
                 setTitle(data.data.title);
                 setDescription(data.data.description || '');
                 setSlides(data.data.slides || []);
+                setDsl(data.data.dsl || '');
             } else {
                 setError('Presentation not found');
             }
@@ -53,14 +57,27 @@ export default function EditPresentationPage() {
         setError('');
 
         try {
+            // If DSL mode, we only save the DSL string (and title/desc)
+            // If standard mode, we save the slides array
+            const body = dsl ? {
+                title,
+                description,
+                presentation_data: {
+                    ...presentation,
+                    dsl,
+                    title, // Ensure title is synced
+                    description // Ensure description is synced
+                }
+            } : {
+                title,
+                description,
+                slides,
+            };
+
             const response = await fetch(`/api/presentations/${presentation?.presentation_id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title,
-                    description,
-                    slides,
-                }),
+                body: JSON.stringify(body),
             });
 
             if (response.ok) {
@@ -214,32 +231,52 @@ export default function EditPresentationPage() {
                     </div>
                 </div>
 
-                {/* Slides */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Slides ({slides.length})
+                {/* Slides or DSL Editor */}
+                {dsl ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                            DSL Editor
                         </h2>
-                        <button
-                            onClick={handleAddSlide}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                            <Plus size={18} />
-                            Add Slide
-                        </button>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-2 rounded-lg">
+                            <textarea
+                                value={dsl}
+                                onChange={(e) => setDsl(e.target.value)}
+                                className="w-full h-[600px] font-mono text-sm bg-transparent border-0 focus:ring-0 p-4 text-gray-800 dark:text-gray-200"
+                                spellCheck={false}
+                            />
+                        </div>
+                        <p className="mt-2 text-sm text-gray-500">
+                            Edit the standard DSL to modify slides. Be careful with syntax.
+                        </p>
                     </div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Slides ({slides.length})
+                            </h2>
+                            <button
+                                onClick={handleAddSlide}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                <Plus size={18} />
+                                Add Slide
+                            </button>
+                        </div>
 
-                    {slides.map((slide, index) => (
-                        <SlideEditor
-                            key={slide.id}
-                            slide={slide}
-                            onUpdate={(updatedSlide) => handleSlideUpdate(index, updatedSlide)}
-                            onDelete={() => handleDeleteSlide(index)}
-                            showDelete={slides.length > 1}
-                        />
-                    ))}
-                </div>
+                        {slides.map((slide, index) => (
+                            <SlideEditor
+                                key={slide.id}
+                                slide={slide}
+                                onUpdate={(updatedSlide) => handleSlideUpdate(index, updatedSlide)}
+                                onDelete={() => handleDeleteSlide(index)}
+                                showDelete={slides.length > 1}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
 }
+
