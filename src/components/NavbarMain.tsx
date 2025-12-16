@@ -1,13 +1,34 @@
 'use client';
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, User, FlaskConical } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { User, FlaskConical, Settings } from "lucide-react";
 import { useExperimentalMode } from "@/contexts/experimental-mode-context";
+import { useState, useRef, useEffect } from "react";
 
 export default function NavbarMain() {
   const pathname = usePathname();
+  const router = useRouter();
   const { experimentalMode, toggleExperimentalMode } = useExperimentalMode();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Extract page name from pathname
   const getPageName = () => {
@@ -36,13 +57,31 @@ export default function NavbarMain() {
           <FlaskConical size={18} />
           <span className="text-sm font-medium">Experimental</span>
         </button>
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors relative">
-          <Bell size={20} className="text-gray-600 dark:text-gray-400" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-        <Link href="/settings" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-          <User size={20} className="text-gray-600 dark:text-gray-400" />
-        </Link>
+        
+        {/* User Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          >
+            <User size={20} className="text-gray-600 dark:text-gray-400" />
+          </button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
+              <button
+                onClick={() => {
+                  setIsDropdownOpen(false);
+                  router.push('/settings');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Settings size={18} />
+                <span className="text-sm font-medium">Profile</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
