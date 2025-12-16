@@ -64,7 +64,7 @@ export default function SideBar() {
                 </div>
 
                 {/* Search Button */}
-                <div className="relative px-4 py-4">
+                {/* <div className="relative px-4 py-4">
                     <button
                         onClick={() => { console.log("open search bar like in sora") }}
                         className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-xl transition-all duration-300 group"
@@ -72,7 +72,7 @@ export default function SideBar() {
                         <Search className="text-slate-400 group-hover:text-purple-400 transition-colors" size={20} />
                         <span className="text-slate-400 group-hover:text-white text-sm font-medium transition-colors">Search</span>
                     </button>
-                </div>
+                </div> */}
 
                 {/* Navigation */}
                 <nav className="relative flex-1 px-4 py-2 space-y-2">

@@ -21,9 +21,9 @@ export const DSLShowcaseSection = () => {
                         <Link href="/docs" className="flex h-14 items-center justify-center rounded-full bg-white px-8 text-lg font-bold text-slate-900 shadow-lg hover:bg-slate-100 transition-colors">
                             Read Documentation
                         </Link>
-                        <Link href="/sandbox" className="flex h-14 items-center justify-center rounded-full border border-slate-600 px-8 text-lg font-bold text-white hover:bg-slate-800 transition-colors">
+                        {/* <Link href="/sandbox" className="flex h-14 items-center justify-center rounded-full border border-slate-600 px-8 text-lg font-bold text-white hover:bg-slate-800 transition-colors">
                             Try Sandbox
-                        </Link>
+                        </Link> */}
                     </div>
                 </div>
 
