@@ -20,12 +20,12 @@ export default function Page() {
     const itemsPerPage = 6;
 
     useEffect(() => {
-        fetchPresentations();
-    }, []);
+        fetchPresentations(user?.id);
+    }, [user?.id]);
 
-    const fetchPresentations = async () => {
+    const fetchPresentations = async (userId: string | undefined) => {
         try {
-            const response = await fetch(`/api/presentations?public=true&uid=${user}&page=explore`);
+            const response = await fetch(`/api/presentations?public=true&uid=${userId}&page=explore`);
             const data = await response.json();
             setPresentations(data.data || []);
         } catch (error) {
@@ -195,11 +195,10 @@ export default function Page() {
                                         <button
                                             key={page}
                                             onClick={() => goToPage(page)}
-                                            className={`px-5 py-3 rounded-xl font-semibold transition-all hover-lift ${
-                                                currentPage === page
-                                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl'
-                                                    : 'glass-card border border-white/20 text-purple-200 hover:bg-white/10'
-                                            }`}
+                                            className={`px-5 py-3 rounded-xl font-semibold transition-all hover-lift ${currentPage === page
+                                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl'
+                                                : 'glass-card border border-white/20 text-purple-200 hover:bg-white/10'
+                                                }`}
                                         >
                                             {page}
                                         </button>

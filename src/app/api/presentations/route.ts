@@ -11,18 +11,18 @@ export async function GET(request: NextRequest) {
         const offset = parseInt(searchParams.get('offset') || '0');
         const isPublic = searchParams.get('public') === 'true';
         let query = null;
-        if (isExplorePage === 'explore'){
+        if (isExplorePage === 'explore') {
             query = supabase
                 .from('Presentation')
                 .select(`
                     *,
                     PresentationStats(*)
                 `)
-                .eq('owner_id',userId)
+                .eq('owner_id', userId)
                 .order('created_at', { ascending: false })
                 .range(offset, offset + limit - 1);
-            }
-        else{
+        }
+        else {
             query = supabase
                 .from('Presentation')
                 .select(`
@@ -53,11 +53,13 @@ export async function GET(request: NextRequest) {
             title: presentation?.prompts?.join(" ") || 'Untitled',
             description: presentation.presentation_data?.description || '',
             slides: presentation.presentation_data?.slides || [],
+            dsl: presentation.presentation_data?.dsl || null,
             user_id: presentation.owner_id,
             is_public: presentation.presentation_data?.is_public ?? true,
             views: presentation.PresentationStats?.[0]?.likes || 0,
             created_at: presentation.created_at,
             updated_at: presentation.updated_at,
+            PresentationStats: presentation.PresentationStats,
         }));
 
         return NextResponse.json({ data: transformedData });
