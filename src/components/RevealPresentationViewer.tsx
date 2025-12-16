@@ -1,26 +1,82 @@
+/**
+ * RevealPresentationViewer Component
+ * 
+ * DESIGN SPECIFICATION:
+ * This component renders presentations using Reveal.js, a professional HTML presentation framework.
+ * It provides a full-featured presentation experience with:
+ * - Slide transitions and animations
+ * - Keyboard and touch navigation
+ * - Code syntax highlighting
+ * - Mathematical notation support (MathJax)
+ * - Speaker notes
+ * - Search functionality
+ * - Zoom capabilities
+ * 
+ * ARCHITECTURE:
+ * - Dynamically loads Reveal.js and plugins only when needed
+ * - Converts DSL to Reveal.js-compatible HTML structure
+ * - Initializes once on mount to prevent re-initialization issues
+ * - Properly cleans up on unmount to prevent memory leaks
+ * 
+ * PERFORMANCE OPTIMIZATION:
+ * - Uses refs to maintain Reveal.js instance across renders
+ * - Empty dependency array ensures single initialization
+ * - Lazy loads all plugins asynchronously
+ */
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { dslToRevealSlides } from '@/lib/reveal-converter';
 import { dslToSlides } from '@/lib/dsl';
 import { Presentation } from '@/types/types';
+
+// DESIGN NOTE: Reveal.js theme CSS
+// Loaded at module level for consistent styling across all presentations
 import 'reveal.js/dist/reveal.css';
 import 'reveal.js/dist/theme/black.css';
 
+/**
+ * INTERFACE: RevealPresentationViewerProps
+ * Component props for controlling the presentation viewer
+ * - presentation: Full presentation object with DSL or slide data
+ * - onClose: Optional callback to close the viewer (for modal usage)
+ */
 interface RevealPresentationViewerProps {
     presentation: Presentation;
     onClose?: () => void;
 }
 
 export default function RevealPresentationViewer({ presentation, onClose }: RevealPresentationViewerProps) {
+    // STATE MANAGEMENT:
+    // - revealRef: DOM reference to the container element for Reveal.js
+    // - revealInstanceRef: Persistent reference to Reveal.js instance (survives re-renders)
+    // - isInitialized: Flag to track initialization status (prevents double initialization)
     const revealRef = useRef<HTMLDivElement>(null);
     const revealInstanceRef = useRef<any>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
+    /**
+     * REVEAL.JS INITIALIZATION EFFECT
+     * 
+     * CRITICAL DESIGN DECISION:
+     * - Empty dependency array [] ensures this runs ONLY ONCE on mount
+     * - Prevents infinite re-initialization loops
+     * - Uses isInitialized guard for extra safety
+     * 
+     * PLUGIN LOADING STRATEGY:
+     * - All plugins loaded with .esm.js extension (ES module format)
+     * - Graceful degradation: continues if plugins fail to load
+     * - Comprehensive plugin suite for full presentation features
+     * 
+     * ERROR HANDLING:
+     * - Try-catch blocks for each plugin prevent cascade failures
+     * - Console warnings for missing plugins aid debugging
+     * - Main initialization wrapped in try-catch for robustness
+     */
     useEffect(() => {
         if (!revealRef.current || isInitialized) return;
 
-        // Dynamically import Reveal.js
+        // ASYNC INITIALIZATION: Dynamically import Reveal.js to reduce initial bundle size
         const initReveal = async () => {
             try {
                 const Reveal = (await import('reveal.js')).default;
@@ -96,12 +152,15 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 // Note: Auto-animate is built-in to Reveal.js (enabled via config.autoAnimate)
                 // Menu and Anything plugins are not part of the standard reveal.js package
 
-                // Get slides from presentation
+                // SLIDE EXTRACTION:
+                // Supports two presentation formats:
+                // 1. DSL format (preferred) - parsed using dslToSlides
+                // 2. Legacy slide objects - converted to basic HTML
                 let slides: string[] = [];
                 if (presentation.dsl) {
                     slides = dslToSlides(presentation.dsl);
                 } else if (presentation.slides) {
-                    // Convert Slide objects to HTML if needed
+                    // Fallback: Convert Slide objects to HTML if needed
                     slides = presentation.slides.map(slide => {
                         if (typeof slide === 'string') return slide;
                         return `<h1>${slide.title}</h1><p>${slide.content}</p>`;
@@ -113,8 +172,23 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                     return;
                 }
 
-                // Convert slides to Reveal.js sections format
-                // Extract data attributes from wrapper divs created by dsl.ts
+                /**
+                 * SLIDE PROCESSING:
+                 * Converts HTML slides to Reveal.js <section> format
+                 * 
+                 * ATTRIBUTE EXTRACTION:
+                 * - Uses DOMParser to safely parse HTML
+                 * - Extracts data-* attributes for Reveal.js features:
+                 *   - data-transition: Custom slide transitions
+                 *   - data-background: Background colors/images
+                 *   - data-auto-animate: Auto-animation between slides
+                 * - Preserves inner content while extracting wrapper attributes
+                 * 
+                 * ERROR RECOVERY:
+                 * - Multiple fallback strategies if innerHTML is empty
+                 * - Reconstructs content from child nodes if needed
+                 * - Logs warnings for debugging
+                 */
                 const revealSections = slides.map((slide, index) => {
                     console.log(`🔍 [REVEAL] Processing slide ${index + 1}, original length: ${slide.length}`);
                     console.log(`📄 [REVEAL] Slide ${index + 1} HTML preview:`, slide.substring(0, 200));
@@ -202,7 +276,28 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                     revealRef.current.innerHTML = `<div class="slides">${revealSections}</div>`;
                 }
 
-                // Initialize Reveal.js with COMPLETE feature set
+                /**
+                 * REVEAL.JS CONFIGURATION:
+                 * Comprehensive configuration enabling all features
+                 * 
+                 * NAVIGATION:
+                 * - controls: Show navigation arrows
+                 * - keyboard: Enable keyboard shortcuts
+                 * - touch: Enable touch/swipe navigation
+                 * - overview: Enable slide overview mode (ESC key)
+                 * 
+                 * VISUAL EFFECTS:
+                 * - transition: Slide transition style
+                 * - backgroundTransition: Background transition effect
+                 * - autoAnimate: Automatic element animations
+                 * - fragments: Step-by-step content reveal
+                 * 
+                 * LAYOUT:
+                 * - center: Center slides vertically
+                 * - width/height: Default slide dimensions
+                 * - margin: Space around slides
+                 * - minScale/maxScale: Zoom limits
+                 */
                 const config: any = {
                     hash: true,
                     controls: true,

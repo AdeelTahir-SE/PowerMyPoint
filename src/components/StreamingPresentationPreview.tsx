@@ -1,3 +1,24 @@
+/**
+ * StreamingPresentationPreview Component
+ * 
+ * DESIGN SPECIFICATION:
+ * This component provides a real-time preview of presentations as they are being generated.
+ * It supports two rendering modes:
+ * 1. Standard HTML mode - renders slides as HTML with custom styling
+ * 2. Reveal.js mode (experimental) - uses Reveal.js for professional presentation rendering
+ * 
+ * ARCHITECTURE:
+ * - Receives streaming slide data with partial DSL content
+ * - Parses and renders slides incrementally as data arrives
+ * - Auto-advances to newest slide during generation
+ * - Provides manual navigation between slides
+ * 
+ * STYLING APPROACH:
+ * - Glassmorphism design with dark theme
+ * - Purple/indigo accent colors for consistency with app theme
+ * - Full-screen modal overlay with backdrop blur
+ * - Responsive layout with fixed header and navigation controls
+ */
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -7,19 +28,35 @@ import { dslToSlides } from '@/lib/dsl';
 import { dslToRevealSlides } from '@/lib/reveal-converter';
 import { useExperimentalMode } from '@/contexts/experimental-mode-context';
 
-// Import Reveal.js CSS and highlight.js
+// DESIGN NOTE: CSS imports for Reveal.js theme
+// Conditionally loaded only in browser environment to avoid SSR issues
 if (typeof window !== 'undefined') {
     import('reveal.js/dist/reveal.css');
     import('reveal.js/dist/theme/black.css');
     import('highlight.js/styles/github-dark.css');
 }
 
+/**
+ * INTERFACE: StreamingSlide
+ * Represents a single slide being streamed from the server
+ * - slideIndex: 0-based position in the presentation
+ * - partialDsl: Incrementally built DSL content (may be incomplete)
+ * - isComplete: Flag indicating if slide generation is finished
+ */
 interface StreamingSlide {
     slideIndex: number;
     partialDsl: string;
     isComplete: boolean;
 }
 
+/**
+ * INTERFACE: StreamingPresentationPreviewProps
+ * Component props for controlling the preview modal
+ * - slides: Array of streaming slide data
+ * - onClose: Callback to close the preview modal
+ * - onComplete: Callback when presentation generation completes
+ * - isStreaming: Flag indicating if data is still being received
+ */
 interface StreamingPresentationPreviewProps {
     slides: StreamingSlide[];
     onClose?: () => void;
@@ -33,12 +70,31 @@ export default function StreamingPresentationPreview({
     onComplete,
     isStreaming,
 }: StreamingPresentationPreviewProps) {
+    // STATE MANAGEMENT:
+    // - currentSlideIndex: Tracks which slide is currently being displayed
+    // - experimentalMode: Determines whether to use Reveal.js or standard HTML rendering
+    // - revealRef: DOM reference for Reveal.js container
+    // - revealInstanceRef: Persistent reference to Reveal.js instance
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
     const { experimentalMode } = useExperimentalMode();
     const revealRef = useRef<HTMLDivElement>(null);
     const revealInstanceRef = useRef<any>(null);
 
-    // Build HTML from partial DSL for each slide
+    /**
+     * RENDERING LOGIC:
+     * Converts partial DSL to HTML for each slide
+     * 
+     * DESIGN DECISIONS:
+     * - Uses useMemo for performance optimization (only re-renders when slides change)
+     * - Gracefully handles incomplete DSL with fallback rendering
+     * - Shows preview of raw DSL when parsing fails
+     * - Displays loading indicators for incomplete slides
+     * 
+     * ERROR HANDLING:
+     * - Wraps partial DSL in minimal PRESENTATION structure for parsing
+     * - Falls back to showing raw DSL preview if parsing fails
+     * - Limits preview length to prevent UI overflow
+     */
     const renderedSlides = useMemo(() => {
         return slides.map((slide) => {
             if (!slide.partialDsl) {
@@ -77,7 +133,26 @@ export default function StreamingPresentationPreview({
         });
     }, [slides]);
 
-    // Initialize Reveal.js when in experimental mode and slides are available
+    /**
+     * REVEAL.JS INITIALIZATION:
+     * Dynamically loads and configures Reveal.js when in experimental mode
+     * 
+     * DESIGN APPROACH:
+     * - Only initializes when experimentalMode is enabled
+     * - Loads all available Reveal.js plugins (Markdown, Highlight, Notes, Math, Search, Zoom)
+     * - Destroys and recreates instance when slides update for proper re-rendering
+     * - Cleans up instance when switching out of experimental mode
+     * 
+     * CONFIGURATION:
+     * - Enables all interactive features (controls, progress, keyboard, touch)
+     * - Uses slide transition with fade background transition
+     * - Enables auto-animate for smooth element transitions
+     * - Configures MathJax for mathematical notation support
+     * 
+     * PERFORMANCE:
+     * - Lazy loads Reveal.js and plugins only when needed
+     * - Properly cleans up on unmount to prevent memory leaks
+     */
     useEffect(() => {
         if (!experimentalMode || !revealRef.current) {
             // Clean up if switching out of experimental mode
@@ -253,22 +328,51 @@ export default function StreamingPresentationPreview({
         };
     }, [experimentalMode, renderedSlides]);
 
-    // Auto-advance to latest slide when new one arrives
+    /**
+     * AUTO-ADVANCE LOGIC:
+     * Automatically navigates to the newest slide as it arrives
+     * 
+     * UX RATIONALE:
+     * - Keeps user focused on the latest generated content
+     * - User can still manually navigate to previous slides
+     * - Only triggers when slide count changes (not on content updates)
+     */
     useEffect(() => {
         if (slides.length > 0) {
             setCurrentSlideIndex(slides.length - 1);
         }
     }, [slides.length]);
 
+    // DERIVED STATE: Computed values for current slide display
     const currentSlide = renderedSlides[currentSlideIndex] || '';
     const totalSlides = slides.length;
     const currentSlideData = slides[currentSlideIndex];
     const currentDslLength = currentSlideData?.partialDsl.length || 0;
 
     return (
+        /**
+         * LAYOUT STRUCTURE:
+         * - Full-screen modal overlay (z-50 for top layer)
+         * - Dark backdrop with blur effect for focus
+         * - Flexbox column layout with fixed header and footer
+         * 
+         * STYLING:
+         * - bg-black/90: Semi-transparent black background
+         * - backdrop-blur-sm: Subtle blur effect on content behind modal
+         */
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center">
             <div className="relative w-full h-full flex flex-col">
-                {/* Header */}
+                {/* 
+                    HEADER SECTION:
+                    - Fixed at top with glassmorphism effect
+                    - Shows generation status and slide count
+                    - Includes close button and mode indicator
+                    
+                    DESIGN CLASSES:
+                    - glass-dark: Custom glassmorphism with dark background
+                    - border-b border-white/10: Subtle bottom border
+                    - z-20: Ensures header stays above slide content
+                */}
                 <div className="absolute top-0 left-0 right-0 z-20 glass-dark border-b border-white/10 p-4">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -310,7 +414,21 @@ export default function StreamingPresentationPreview({
                     </div>
                 </div>
 
-                {/* Slide Navigation */}
+                {/* 
+                    NAVIGATION CONTROLS:
+                    - Only shown when multiple slides exist
+                    - Centered at bottom with glassmorphism pill design
+                    - Previous/Next buttons with disabled states
+                    
+                    POSITIONING:
+                    - absolute bottom-8: Fixed 2rem from bottom
+                    - left-1/2 -translate-x-1/2: Horizontally centered
+                    - z-20: Above slide content but below header
+                    
+                    STYLING:
+                    - rounded-full: Pill-shaped container
+                    - glass-dark: Glassmorphism effect for modern look
+                */}
                 {totalSlides > 1 && (
                     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-4 glass-dark px-6 py-3 rounded-full border border-white/20">
                         <button
@@ -339,7 +457,23 @@ export default function StreamingPresentationPreview({
                     </div>
                 )}
 
-                {/* Slide Content */}
+                {/* 
+                    SLIDE CONTENT AREA:
+                    - Main content area with flex-1 to fill available space
+                    - Padding accounts for fixed header (pt-20) and navigation (pb-24)
+                    - Centers content both horizontally and vertically
+                    
+                    RENDERING MODES:
+                    1. Reveal.js mode (experimentalMode=true):
+                       - Professional presentation framework
+                       - Full Reveal.js features (transitions, fragments, etc.)
+                    2. Standard HTML mode (experimentalMode=false):
+                       - Custom HTML rendering with dangerouslySetInnerHTML
+                       - Simpler but faster rendering
+                    
+                    OVERFLOW HANDLING:
+                    - overflow-hidden: Prevents content from breaking layout
+                */}
                 <div className="flex-1 flex items-center justify-center p-8 pt-20 pb-24 overflow-hidden">
                     {experimentalMode ? (
                         <div
@@ -362,7 +496,17 @@ export default function StreamingPresentationPreview({
                     )}
                 </div>
 
-                {/* Progress Indicator */}
+                {/* 
+                    STREAMING PROGRESS INDICATOR:
+                    - Only visible while actively receiving data
+                    - Shows pulsing animation to indicate live streaming
+                    - Positioned at bottom center, above navigation
+                    
+                    DESIGN:
+                    - Glassmorphism pill with purple accent
+                    - Animated dot for visual feedback
+                    - Clear "Streaming DSL..." message
+                */}
                 {isStreaming && (
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
                         <div className="glass-dark px-4 py-2 rounded-full border border-white/20">
