@@ -3,7 +3,7 @@
 import { Presentation } from "@/types/types";
 import Link from "next/link";
 import { Calendar, Eye, FileText, Trash2, Edit, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { dslToSlides } from "@/lib/dsl";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -12,7 +12,7 @@ interface PresentationCardProps {
     onDelete?: (id: string) => void;
 }
 
-export default function PresentationCard({ Presentation, onDelete }: PresentationCardProps) {
+function PresentationCard({ Presentation, onDelete }: PresentationCardProps) {
     const { user } = useAuth();
     const [isDeleting, setIsDeleting] = useState(false);
     const [firstSlideHtml, setFirstSlideHtml] = useState<string | null>(null);
@@ -234,3 +234,16 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
         </div>
     );
 }
+
+// Memoize the component to prevent re-renders when parent state changes
+// Only re-render if the presentation data actually changes
+export default memo(PresentationCard, (prevProps, nextProps) => {
+    // Only re-render if presentation_id or dsl changes
+    return (
+        prevProps.Presentation.presentation_id === nextProps.Presentation.presentation_id &&
+        prevProps.Presentation.dsl === nextProps.Presentation.dsl &&
+        prevProps.Presentation.title === nextProps.Presentation.title &&
+        prevProps.Presentation.description === nextProps.Presentation.description &&
+        prevProps.onDelete === nextProps.onDelete
+    );
+});

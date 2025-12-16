@@ -50,11 +50,11 @@ export default function StreamingPresentationPreview({
                 // Wrap in a minimal PRESENTATION structure for parsing
                 const fullDsl = `PRESENTATION { slides = [ ${slide.partialDsl} ]; }`;
                 const htmlSlides = dslToSlides(fullDsl);
-                
+
                 if (htmlSlides.length > 0) {
                     return htmlSlides[0];
                 }
-                
+
                 // If parsing failed, try to extract what we can
                 // Look for any complete elements in the partial DSL
                 return `<div class="relative w-full min-h-screen p-8">
@@ -99,10 +99,10 @@ export default function StreamingPresentationPreview({
         const initReveal = async () => {
             try {
                 const Reveal = (await import('reveal.js')).default;
-                
+
                 // Try to load ALL available plugins
                 let plugins: any[] = [];
-                
+
                 // Markdown plugin - using .esm.js as per official docs
                 try {
                     const RevealMarkdown = (await import('reveal.js/plugin/markdown/markdown.esm.js')).default;
@@ -111,7 +111,7 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Markdown plugin not available', e);
                 }
-                
+
                 // Highlight plugin (code syntax highlighting) - using .esm.js
                 try {
                     const RevealHighlight = (await import('reveal.js/plugin/highlight/highlight.esm.js')).default;
@@ -131,7 +131,7 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Highlight plugin not available', e);
                 }
-                
+
                 // Notes plugin (speaker notes) - using .esm.js
                 try {
                     const RevealNotes = (await import('reveal.js/plugin/notes/notes.esm.js')).default;
@@ -140,7 +140,7 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Notes plugin not available', e);
                 }
-                
+
                 // Math plugin (MathJax) - using .esm.js
                 try {
                     const RevealMath = (await import('reveal.js/plugin/math/math.esm.js')).default;
@@ -149,7 +149,7 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Math plugin not available', e);
                 }
-                
+
                 // Search plugin - using .esm.js
                 try {
                     const RevealSearch = (await import('reveal.js/plugin/search/search.esm.js')).default;
@@ -158,7 +158,7 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Search plugin not available', e);
                 }
-                
+
                 // Zoom plugin - using .esm.js
                 try {
                     const RevealZoom = (await import('reveal.js/plugin/zoom/zoom.esm.js')).default;
@@ -167,13 +167,13 @@ export default function StreamingPresentationPreview({
                 } catch (e) {
                     console.warn('⚠️ [STREAMING] Zoom plugin not available', e);
                 }
-                
+
                 // Note: Auto-animate is built-in to Reveal.js (enabled via config.autoAnimate)
                 // Menu and Anything plugins are not part of the standard reveal.js package
 
                 // Convert to Reveal.js format
                 const revealHtml = dslToRevealSlides(renderedSlides);
-                
+
                 if (revealRef.current) {
                     revealRef.current.innerHTML = revealHtml;
                 }
@@ -206,7 +206,7 @@ export default function StreamingPresentationPreview({
                 if (plugins.length > 0) {
                     fullConfig.plugins = plugins;
                 }
-                
+
                 // Configure Math plugin if available (simplified config - let plugin handle MathJax)
                 const mathPlugin = plugins.find((p: any) => p && p.id === 'math');
                 if (mathPlugin) {
@@ -216,7 +216,7 @@ export default function StreamingPresentationPreview({
                 }
 
                 if (!revealInstanceRef.current) {
-                    const revealInstance = new Reveal(revealRef.current, fullConfig);
+                    const revealInstance = new Reveal(revealRef.current!, fullConfig);
 
                     revealInstance.initialize().then(() => {
                         revealInstanceRef.current = revealInstance;
@@ -228,8 +228,8 @@ export default function StreamingPresentationPreview({
                     } catch (e) {
                         // Ignore destroy errors
                     }
-                    
-                    const revealInstance = new Reveal(revealRef.current, fullConfig);
+
+                    const revealInstance = new Reveal(revealRef.current!, fullConfig);
                     revealInstance.initialize().then(() => {
                         revealInstanceRef.current = revealInstance;
                     });

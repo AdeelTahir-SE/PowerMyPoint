@@ -4,13 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { dslToRevealSlides } from '@/lib/reveal-converter';
 import { dslToSlides } from '@/lib/dsl';
 import { Presentation } from '@/types/types';
-
-// Import Reveal.js CSS and highlight.js
-if (typeof window !== 'undefined') {
-    import('reveal.js/dist/reveal.css');
-    import('reveal.js/dist/theme/black.css');
-    import('highlight.js/styles/github-dark.css');
-}
+import 'reveal.js/dist/reveal.css';
+import 'reveal.js/dist/theme/black.css';
 
 interface RevealPresentationViewerProps {
     presentation: Presentation;
@@ -29,10 +24,10 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
         const initReveal = async () => {
             try {
                 const Reveal = (await import('reveal.js')).default;
-                
+
                 // Try to load ALL available plugins
                 let plugins: any[] = [];
-                
+
                 // Markdown plugin - using .esm.js as per official docs
                 try {
                     const RevealMarkdown = (await import('reveal.js/plugin/markdown/markdown.esm.js')).default;
@@ -41,7 +36,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Markdown plugin not available', e);
                 }
-                
+
                 // Highlight plugin (code syntax highlighting) - using .esm.js
                 try {
                     const RevealHighlight = (await import('reveal.js/plugin/highlight/highlight.esm.js')).default;
@@ -61,7 +56,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Highlight plugin not available', e);
                 }
-                
+
                 // Notes plugin (speaker notes) - using .esm.js
                 try {
                     const RevealNotes = (await import('reveal.js/plugin/notes/notes.esm.js')).default;
@@ -70,7 +65,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Notes plugin not available', e);
                 }
-                
+
                 // Math plugin (MathJax) - using .esm.js
                 try {
                     const RevealMath = (await import('reveal.js/plugin/math/math.esm.js')).default;
@@ -79,7 +74,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Math plugin not available', e);
                 }
-                
+
                 // Search plugin - using .esm.js
                 try {
                     const RevealSearch = (await import('reveal.js/plugin/search/search.esm.js')).default;
@@ -88,7 +83,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Search plugin not available', e);
                 }
-                
+
                 // Zoom plugin - using .esm.js
                 try {
                     const RevealZoom = (await import('reveal.js/plugin/zoom/zoom.esm.js')).default;
@@ -97,7 +92,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 } catch (e) {
                     console.warn('⚠️ [REVEAL] Zoom plugin not available', e);
                 }
-                
+
                 // Note: Auto-animate is built-in to Reveal.js (enabled via config.autoAnimate)
                 // Menu and Anything plugins are not part of the standard reveal.js package
 
@@ -123,15 +118,15 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 const revealSections = slides.map((slide, index) => {
                     console.log(`🔍 [REVEAL] Processing slide ${index + 1}, original length: ${slide.length}`);
                     console.log(`📄 [REVEAL] Slide ${index + 1} HTML preview:`, slide.substring(0, 200));
-                    
+
                     // Use DOMParser to properly extract wrapper div attributes and inner content
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(slide, 'text/html');
                     const wrapperDiv = doc.body.firstElementChild;
-                    
+
                     const sectionAttrs: string[] = [];
                     let cleanSlide = slide;
-                    
+
                     if (wrapperDiv && wrapperDiv.tagName.toLowerCase() === 'div') {
                         // Extract all data-* attributes from the wrapper div
                         Array.from(wrapperDiv.attributes).forEach(attr => {
@@ -139,10 +134,10 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                                 sectionAttrs.push(`${attr.name}="${attr.value}"`);
                             }
                         });
-                        
+
                         // Get the inner HTML content (all children of the wrapper div)
                         cleanSlide = wrapperDiv.innerHTML;
-                        
+
                         // If innerHTML is empty, try to get textContent or use the original slide
                         if (!cleanSlide || cleanSlide.trim().length === 0) {
                             console.warn(`⚠️ [REVEAL] Slide ${index + 1}: Wrapper div innerHTML is empty, checking children...`);
@@ -161,7 +156,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                                     .filter(Boolean)
                                     .join('');
                             }
-                            
+
                             // If still empty, use the original slide but remove the wrapper div
                             if (!cleanSlide || cleanSlide.trim().length === 0) {
                                 console.warn(`⚠️ [REVEAL] Slide ${index + 1}: Still empty, using original slide without wrapper`);
@@ -169,7 +164,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                                 cleanSlide = slide.replace(/^<div[^>]*>/, '').replace(/<\/div>\s*$/, '');
                             }
                         }
-                        
+
                         console.log(`✅ [REVEAL] Slide ${index + 1}: Extracted ${sectionAttrs.length} data attributes, content length: ${cleanSlide.length}`);
                         console.log(`📝 [REVEAL] Slide ${index + 1} extracted content preview:`, cleanSlide.substring(0, 200));
                     } else {
@@ -179,7 +174,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                         const dataAttrPattern = /data-([a-zA-Z0-9-]+)\s*=\s*"([^"]*)"/gi;
                         let match;
                         const foundAttrs = new Set<string>();
-                        
+
                         while ((match = dataAttrPattern.exec(slide)) !== null) {
                             const attrName = match[1];
                             const attrValue = match[2];
@@ -189,18 +184,18 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                             }
                         }
                     }
-                    
+
                     // Final check - if cleanSlide is still empty, log a warning
                     if (!cleanSlide || cleanSlide.trim().length === 0) {
                         console.error(`❌ [REVEAL] Slide ${index + 1}: FINAL CONTENT IS EMPTY! Original slide:`, slide);
                     }
-                    
+
                     return `<section ${sectionAttrs.join(' ')}>${cleanSlide}</section>`;
                 }).join('\n');
-                
+
                 console.log(`✅ [REVEAL] Created ${revealSections.split('</section>').length - 1} sections`);
                 console.log(`📋 [REVEAL] First section preview:`, revealSections.substring(0, 500));
-                
+
                 // Set the HTML content - Reveal.js expects the container to have class "reveal" with a child div with class "slides"
                 if (revealRef.current) {
                     revealRef.current.className = 'reveal';
@@ -266,7 +261,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 if (plugins.length > 0) {
                     config.plugins = plugins;
                 }
-                
+
                 // Configure Math plugin if available (simplified config - let plugin handle MathJax)
                 const mathPlugin = plugins.find((p: any) => p && p.id === 'math');
                 if (mathPlugin) {
@@ -303,7 +298,8 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 }
             }
         };
-    }, [presentation, isInitialized]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount
 
     return (
         <div className="relative w-full h-full">

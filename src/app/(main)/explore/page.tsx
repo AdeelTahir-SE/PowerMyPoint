@@ -4,7 +4,7 @@ import PresentationCard from "@/components/PresentationCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StreamingPresentationPreview from "@/components/StreamingPresentationPreview";
 import { Presentation } from "@/types/types";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Sparkles, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -225,9 +225,9 @@ export default function Page() {
         }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = useCallback((id: string) => {
         setPresentations(presentations.filter(p => p.presentation_id !== id));
-    };
+    }, [presentations]);
 
     // Pagination calculations
     const totalPages = Math.ceil(presentations.length / itemsPerPage);
