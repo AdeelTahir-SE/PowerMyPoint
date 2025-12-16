@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
                     email,
                     name: full_name,
                     profile_image: "/placeholder-avatar.jpeg",
-                    tier_plan: "free",
+                    tier_plan: body.tier_plan || "free",
 
                 }
             ])
@@ -77,11 +77,77 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ data });
+        // Count Usage (Presentations created this month)
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const { count, error: countError } = await supabase
+            .from('Presentation')
+            .select('*', { count: 'exact', head: true })
+            .eq('owner_id', userId)
+            .gte('created_at', startOfMonth.toISOString());
+
+        const usage = count || 0;
+        const tier = data.tier_plan || 'free';
+        const limit = tier === 'pro' ? 20 : 5;
+
+        return NextResponse.json({
+            data: {
+                ...data,
+                usage: {
+                    used: usage,
+                    limit: limit,
+                    remaining: Math.max(0, limit - usage)
+                }
+            }
+        });
     } catch (error) {
         console.error('Error fetching user:', error);
         return NextResponse.json(
             { error: 'Failed to fetch user' },
+            { status: 500 }
+        );
+    }
+}
+
+// PATCH update user
+export async function PATCH(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { user_id, ...updates } = body;
+
+        if (!user_id) {
+            return NextResponse.json(
+                { error: 'user_id is required' },
+                { status: 400 }
+            );
+        }
+
+        const { data, error } = await supabase
+            .from('User')
+            .update(updates)
+            .eq('user_id', user_id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Supabase update error:', error);
+            return NextResponse.json(
+                { error: 'Failed to update user' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({
+            data,
+            message: 'User updated successfully',
+        });
+
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return NextResponse.json(
+            { error: 'Failed to update user' },
             { status: 500 }
         );
     }

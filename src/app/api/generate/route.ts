@@ -7,7 +7,7 @@ const model = genAI.getGenerativeModel({ model: 'gemini-3-pro-preview' });
 
 export async function POST(request: NextRequest) {
     try {
-        const { prompt, userId } = await request.json();
+        const { prompt, userId, isPublic = true } = await request.json(); // Default to public
 
         if (!prompt) {
             return NextResponse.json(
@@ -15,6 +15,62 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
+
+        // --- TIER LOGIC START ---
+        let currentTier = 'free'; // Default to free if no user found
+        let usageCount = 0;
+
+        if (userId) {
+            // 1. Get User Tier
+            const { data: userData, error: userError } = await supabase
+                .from('User')
+                .select('tier_plan')
+                .eq('user_id', userId)
+                .single();
+
+            if (!userError && userData) {
+                currentTier = userData.tier_plan || 'free';
+            }
+
+            // 2. Count Usage (Presentations created this month)
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+
+            const { count, error: countError } = await supabase
+                .from('Presentation')
+                .select('*', { count: 'exact', head: true })
+                .eq('owner_id', userId)
+                .gte('created_at', startOfMonth.toISOString());
+
+            if (!countError) {
+                usageCount = count || 0;
+            }
+        }
+
+        // 3. Enforce Limits
+        const LIMITS = {
+            free: { maxPresentations: 5, allowPrivate: false },
+            pro: { maxPresentations: 20, allowPrivate: true },
+        };
+
+        const tierLimit = LIMITS[currentTier as keyof typeof LIMITS] || LIMITS['free'];
+
+        if (usageCount >= tierLimit.maxPresentations) {
+            return NextResponse.json(
+                { error: `You have reached your limit of ${tierLimit.maxPresentations} presentations this month. Upgrade to create more.` },
+                { status: 403 }
+            );
+        }
+
+        if (!isPublic && !tierLimit.allowPrivate) {
+            return NextResponse.json(
+                { error: 'Private presentations are only available on the Pro plan.' },
+                { status: 403 }
+            );
+        }
+        // --- TIER LOGIC END ---
+
 
         // Generate presentation using Gemini
         const dslPrompt = `You are an expert presentation designer specializing in creating beautiful, engaging presentations using a custom Domain-Specific Language (DSL).
@@ -47,6 +103,7 @@ Rules:
 3. Structure keys (id, title, classes, content) must be unquoted.
 4. String values must be double-quoted.
 5. Create 5-6 slides with engaging layouts.
+6. Use appropriate padding and text colors so that presentation look good on all screens and all themes on device
 6. Return ONLY the DSL string, starting with PRESENTATION {.
 
 `;
@@ -74,8 +131,9 @@ Rules:
             }
         }
 
-        // Add is_public flag logic if needed, but here we store raw data
-        const presentationData = { dsl: dslString, is_public: true };
+        // Add is_public flag logic determines strictly by tier/user choice handled above
+        const finalIsPublic = tierLimit.allowPrivate ? isPublic : true; // Enforce public if not allowed private
+        const presentationData = { dsl: dslString, is_public: finalIsPublic };
 
         // We should extract title for accessibility/searching if possible
         const titleMatch = dslString.match(/title\s*=\s*"([^"]*)"/);
@@ -89,6 +147,7 @@ Rules:
                     presentation_data: presentationData,
                     prompts: [prompt],
                     owner_id: userId || '00000000-0000-0000-0000-000000000000', // Default UUID if no user
+                    is_public: finalIsPublic // Assuming schema supports this column directly on root or inside JSON
                 }
             ])
             .select()

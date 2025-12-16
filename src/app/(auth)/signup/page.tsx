@@ -20,6 +20,7 @@ export default function SignupPage() {
         interests: [] as string[],
         newsletter: false,
         terms: false,
+        plan: 'free',
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -97,6 +98,11 @@ export default function SignupPage() {
 
         setLoading(true);
 
+        // Payment Simulation
+        if (formData.plan === 'pro') {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Mock payment
+        }
+
         try {
             const { error } = await signUp(formData.email, formData.password, {
                 full_name: formData.fullName,
@@ -104,6 +110,7 @@ export default function SignupPage() {
                 account_type: formData.accountType,
                 interests: formData.interests,
                 newsletter: formData.newsletter,
+                tier_plan: formData.plan,
             });
 
             if (error) {
@@ -369,6 +376,66 @@ export default function SignupPage() {
                                             </label>
                                         ))}
                                     </div>
+                                </div>
+
+                                {/* Plan Selection */}
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-3">
+                                        Select Plan
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <label
+                                            className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${formData.plan === 'free'
+                                                ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/30'
+                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="plan"
+                                                value="free"
+                                                checked={formData.plan === 'free'}
+                                                onChange={handleChange}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-2xl mb-1">🌱</span>
+                                            <span className="text-white font-bold">Free</span>
+                                            <span className="text-xs text-slate-400">$0/mo</span>
+                                            {formData.plan === 'free' && (
+                                                <CheckCircle2 className="absolute top-2 right-2 text-emerald-400" size={20} />
+                                            )}
+                                        </label>
+
+                                        <label
+                                            className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${formData.plan === 'pro'
+                                                ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/30'
+                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="plan"
+                                                value="pro"
+                                                checked={formData.plan === 'pro'}
+                                                onChange={handleChange}
+                                                className="sr-only"
+                                            />
+                                            <span className="text-2xl mb-1">🚀</span>
+                                            <span className="text-white font-bold">Pro</span>
+                                            <span className="text-xs text-slate-400">$19/mo</span>
+                                            {formData.plan === 'pro' && (
+                                                <CheckCircle2 className="absolute top-2 right-2 text-purple-400" size={20} />
+                                            )}
+                                        </label>
+                                    </div>
+                                    {formData.plan === 'pro' && (
+                                        <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                                            <p className="text-sm text-purple-200 flex items-center gap-2">
+                                                <Lock size={14} />
+                                                Payment will be processed instantly.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Interests */}
