@@ -22,6 +22,27 @@ const Footer = () => (
 export default function DocsPage() {
     const [activeSection, setActiveSection] = React.useState('introduction');
 
+    React.useEffect(() => {
+        const handleScroll = () => {
+            const sections = ['introduction', 'syntax', 'structure', 'reference'];
+            const scrollPosition = window.scrollY + 150;
+
+            for (const sectionId of sections) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const { offsetTop, offsetHeight } = element;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        setActiveSection(sectionId);
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
             <Navbar />
