@@ -9,6 +9,7 @@ import { ArrowLeft, Edit, Trash2, Download, FileAudio } from "lucide-react";
 import Link from "next/link";
 import { dslToSlides } from "@/lib/dsl";
 import pptxgen from "pptxgenjs";
+import html2canvas from "html2canvas";
 
 export default function PresentationDetailPage() {
     const params = useParams();
@@ -63,197 +64,102 @@ export default function PresentationDetailPage() {
     const handlePPTExport = async () => {
         if (!presentation) return;
 
-        const pres = new pptxgen();
-        pres.layout = 'LAYOUT_16x9';
-        pres.title = presentation.title;
-        pres.author = "PowerMyPoint";
+        try {
+            const pres = new pptxgen();
+            pres.layout = 'LAYOUT_16x9';
+            pres.title = presentation.title;
+            pres.author = "PowerMyPoint";
 
-        const slideData = presentation.dsl
-            ? dslToSlides(presentation.dsl)
-            : presentation.slides || [];
+            const slideData = presentation.dsl
+                ? dslToSlides(presentation.dsl)
+                : presentation.slides || [];
 
-        // Helper to map tailwind classes to pptx styles
-        const getStyles = (element: Element) => {
-            const classes = element.className || '';
-            const style: any = {
-                fontSize: 16, // default
-                color: '363636', // default
-                bold: false,
-                align: 'left',
-            };
+            // Create a hidden container for rendering slides
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = '1920px';
+            container.style.height = '1080px';
+            container.style.backgroundColor = 'white';
+            document.body.appendChild(container);
 
-            // Font Sizes
-            if (classes.includes('text-xs')) style.fontSize = 10;
-            if (classes.includes('text-sm')) style.fontSize = 12;
-            if (classes.includes('text-base')) style.fontSize = 16;
-            if (classes.includes('text-lg')) style.fontSize = 18;
-            if (classes.includes('text-xl')) style.fontSize = 20;
-            if (classes.includes('text-2xl')) style.fontSize = 24;
-            if (classes.includes('text-3xl')) style.fontSize = 30;
-            if (classes.includes('text-4xl')) style.fontSize = 36;
-            if (classes.includes('text-5xl')) style.fontSize = 44;
-            if (classes.includes('text-6xl')) style.fontSize = 52;
-            if (classes.includes('text-7xl')) style.fontSize = 72;
-            if (classes.includes('text-8xl')) style.fontSize = 96;
+            // Process each slide
+            for (let i = 0; i < slideData.length; i++) {
+                const slideItem = slideData[i];
+                const slide = pres.addSlide();
 
-            // Colors (Approximate Tailwind Default Palette)
-            if (classes.includes('text-white')) style.color = 'FFFFFF';
-            if (classes.includes('text-black')) style.color = '000000';
-            if (classes.includes('text-gray-500') || classes.includes('text-slate-500')) style.color = '6B7280';
-            if (classes.includes('text-gray-900') || classes.includes('text-slate-900')) style.color = '111827';
-            if (classes.includes('text-indigo-600') || classes.includes('text-indigo-500')) style.color = '4F46E5';
-            if (classes.includes('text-purple-600') || classes.includes('text-purple-500')) style.color = '9333EA';
-            if (classes.includes('text-emerald-500')) style.color = '10B981';
+                if (typeof slideItem === 'string') {
+                    // Render HTML slide
+                    container.innerHTML = slideItem;
 
-            // Weight
-            if (classes.includes('font-bold')) style.bold = true;
-            if (classes.includes('font-semibold')) style.bold = true;
+                    // Wait for images to load
+                    const images = container.querySelectorAll('img');
+                    await Promise.all(
+                        Array.from(images).map(img => {
+                            if (img.complete) return Promise.resolve();
+                            return new Promise((resolve) => {
+                                img.onload = () => resolve(null);
+                                img.onerror = () => resolve(null);
+                            });
+                        })
+                    );
 
-            // Alignment
-            if (classes.includes('text-center')) style.align = 'center';
-            if (classes.includes('text-right')) style.align = 'right';
+                    // Render to canvas
+                    const canvas = await html2canvas(container, {
+                        width: 1920,
+                        height: 1080,
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                    });
 
-            return style;
-        };
+                    // Convert to base64
+                    const imageData = canvas.toDataURL('image/png');
 
-        slideData.forEach((slideItem: any, index: number) => {
-            const slide = pres.addSlide();
-
-            // Process DSL HTML
-            if (typeof slideItem === 'string') {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(slideItem, 'text/html');
-                const root = doc.body.firstElementChild;
-
-                if (!root) return;
-
-                // 1. Background Check
-                let bgImage = null;
-                const potentialBg = root.querySelector('img.absolute.inset-0');
-                if (potentialBg) {
-                    const src = potentialBg.getAttribute('src');
-                    if (src) {
-                        // Use addImage with sizing for background
-                        slide.addImage({ path: src, x: 0, y: 0, w: '100%', h: '100%' });
-                        // Add a semi-transparent overlay to ensure text readability if needed (simulated)
-                        // slide.addShape(pres.shapes.RECTANGLE, { x:0, y:0, w:'100%', h:'100%', fill:{ color:'000000', transparency:50 } });
-                    }
-                } else if (root.className.includes('bg-')) {
-                    // Try to map bg color
-                    if (root.className.includes('bg-slate-900') || root.className.includes('bg-gray-900')) {
-                        slide.background = { color: '111827' };
-                        // Note: Default text color must be handled per-text element, as slide.color doesn't exist
-                    } else if (root.className.includes('bg-indigo-900')) {
-                        slide.background = { color: '312E81' };
-                    }
-                }
-
-                // 2. Content Traversal
-                // Simple layout strategy: Vertical stack unless grid
-                let yCursor = 0.5; // Start a bit down
-
-                const processNode = (node: Element, xPos: number | string = 0.5, width: number | string = '90%') => {
-                    // If hidden background image, skip
-                    if (node.tagName.toLowerCase() === 'img' && node.className.includes('absolute') && node.className.includes('inset-0')) {
-                        return;
-                    }
-
-                    // Handle Grid (Basic 2-col support)
-                    if (node.className.includes('grid') && node.className.includes('grid-cols-2')) {
-                        const children = Array.from(node.children);
-                        if (children.length >= 2) {
-                            // Left Col
-                            processNode(children[0], 0.5, '45%');
-                            // Reset Y for Right Col (roughly, simplistic)
-                            // Ideally we calculate max height. 
-                            const savedY = yCursor;
-                            // Right Col
-                            // If we didn't track height, this might overlap. 
-                            // For now, simpler: process usually stack or side-by-side. 
-                            // PPTX doesn't auto-flow. We force right col to specific position
-                            // Reset Y checking logic is complex without measuring text.
-                            // Let's just place right column at x=50%
-
-                            // Actually, let's just dump the text content in separate boxes
-                            // Re-processing children manually with override positions
-                            handleTextContent(children[0], 0.5, '45%' as any);
-                            handleTextContent(children[1], 5.5, '45%' as any);
-
-                            // Move cursor down arbitrarily
-                            yCursor += 3;
-                            return;
-                        }
-                    }
-
-                    // Handle Text Elements
-                    if (['h1', 'h2', 'h3', 'p', 'li', 'div', 'span'].includes(node.tagName.toLowerCase())) {
-                        handleTextContent(node, xPos, width);
-                    }
-
-                    // Handle Image Elements (standard flow)
-                    if (node.tagName.toLowerCase() === 'img' && !node.className.includes('absolute')) {
-                        const src = node.getAttribute('src');
-                        if (src) {
-                            slide.addImage({ path: src, x: xPos as any, y: yCursor as any, w: 4, h: 3 });
-                            yCursor += 3.2;
-                        }
-                    }
-
-                    // Recurse for simple containers (not grid)
-                    if (node.tagName.toLowerCase() === 'div' && !node.className.includes('grid')) {
-                        Array.from(node.children).forEach(child => processNode(child, xPos, width));
-                    }
-                };
-
-                const handleTextContent = (node: Element, x: number | string, w: number | string) => {
-                    const text = node.textContent?.trim();
-                    if (!text) return; // Skip empty
-
-                    // Don't duplicate if we are traversing into children that are block elements
-                    // Only print if leaf or inline-only children? 
-                    // Simplification: Print only headers and paragraphs/list-items
-                    if (['h1', 'h2', 'h3', 'p', 'li'].includes(node.tagName.toLowerCase())) {
-                        const style = getStyles(node);
-
-                        // Adjust sizing logic
-                        let h = 0.5;
-                        if (style.fontSize > 30) h = 1.2;
-                        else if (style.fontSize > 18) h = 0.8;
-                        else h = 0.5; // per line approx
-
-                        // Heuristic for length
-                        if (text.length > 50) h *= (Math.ceil(text.length / 50));
-
-                        slide.addText(text, {
-                            x: x as any,
-                            y: yCursor as any,
-                            w: w as any,
-                            h: h as any,
-                            fontSize: style.fontSize,
-                            color: style.color,
-                            bold: style.bold,
-                            align: style.align as any
+                    // Add image to slide at full size
+                    slide.addImage({
+                        data: imageData,
+                        x: 0,
+                        y: 0,
+                        w: '100%',
+                        h: '100%',
+                    });
+                } else {
+                    // Legacy fallback for non-DSL slides
+                    if (slideItem && slideItem.title) {
+                        slide.addText(slideItem.title, {
+                            x: 0.5,
+                            y: 0.5,
+                            w: '90%',
+                            h: 1,
+                            fontSize: 32,
+                            bold: true,
+                            color: '363636'
                         });
-
-                        yCursor += h + 0.2; // Add spacing
+                        slide.addText(slideItem.content, {
+                            x: 0.5,
+                            y: 1.5,
+                            w: '90%',
+                            h: 4,
+                            fontSize: 18,
+                            color: '666666'
+                        });
                     }
-                }
-
-                // Start Processing from Root children to avoid bg wrapper
-                Array.from(root.children).forEach(child => processNode(child));
-
-            } else {
-                // Formatting for JSON/Object slides (Legacy fallback)
-                // ... existing logic ...
-                if (slideItem && slideItem.title) {
-                    slide.addText(slideItem.title, { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '363636' });
-                    slide.addText(slideItem.content, { x: 0.5, y: 1.5, w: '90%', h: 4, fontSize: 18, color: '666666' });
                 }
             }
-        });
 
-        const safeTitle = presentation.title.replace(/[^a-z0-9]/gi, '_').substring(0, 20);
-        pres.writeFile({ fileName: `${safeTitle}.pptx` });
+            // Clean up
+            document.body.removeChild(container);
+
+            // Download PPTX
+            const safeTitle = presentation.title.replace(/[^a-z0-9]/gi, '_').substring(0, 20);
+            await pres.writeFile({ fileName: `${safeTitle}.pptx` });
+        } catch (error) {
+            console.error('Error exporting to PPTX:', error);
+            alert('Failed to export presentation. Please try again.');
+        }
     };
 
     const handleExport = () => {

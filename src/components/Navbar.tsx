@@ -7,13 +7,13 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-slate-200/50 bg-background-light/80 px-4 py-3 backdrop-blur-md dark:border-slate-800/50 dark:bg-background-dark/80 sm:px-6 lg:px-10">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-500 text-white shadow-md">
+        <Link href={"/"} className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-500 text-white shadow-md">
           <svg className="lucide lucide-presentation" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 3h20"></path>
             <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"></path>
             <path d="m7 21 5-5 5 5"></path>
           </svg>
-        </div>
+        </Link>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">PowerMyPoint</h2>
       </div>
       <nav className="hidden items-center gap-8 md:flex">
