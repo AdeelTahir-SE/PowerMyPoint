@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Calendar, Eye, FileText, Trash2, Edit, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { dslToSlides } from "@/lib/dsl";
+import { useAuth } from "@/hooks/use-auth";
 
 interface PresentationCardProps {
     Presentation: Presentation;
@@ -12,8 +13,15 @@ interface PresentationCardProps {
 }
 
 export default function PresentationCard({ Presentation, onDelete }: PresentationCardProps) {
+    const { user } = useAuth();
     const [isDeleting, setIsDeleting] = useState(false);
     const [firstSlideHtml, setFirstSlideHtml] = useState<string | null>(null);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
+    const [isLiking, setIsLiking] = useState(false);
+
+    // Check if current user is the owner
+    const isOwner = user?.id === Presentation.user_id;
 
     // Parse first slide from DSL
     useEffect(() => {
@@ -30,23 +38,71 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
         }
     }, [Presentation.dsl]);
 
+    // Initialize like count
+    useEffect(() => {
+        const likes = (Presentation as any).PresentationStats?.[0]?.likes || 0;
+        setLikeCount(likes);
+    }, [Presentation]);
+
     const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault();
         if (!confirm('Are you sure you want to delete this presentation?')) return;
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`/api/presentations/${Presentation?.presentation_id}`, {
+            const response = await fetch(`/api/presentations/${Presentation?.presentation_id}?userId=${user?.id}`, {
                 method: 'DELETE',
             });
 
             if (response.ok && onDelete) {
                 onDelete(Presentation.presentation_id);
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Failed to delete presentation');
             }
         } catch (error) {
             console.error('Error deleting presentation:', error);
+            alert('Failed to delete presentation');
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isOwner || isLiking) return;
+
+        setIsLiking(true);
+
+        // Optimistic update
+        const newLiked = !isLiked;
+        setIsLiked(newLiked);
+        setLikeCount(prev => newLiked ? prev + 1 : prev - 1);
+
+        try {
+            const response = await fetch(`/api/presentations/${Presentation.presentation_id}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user?.id }),
+            });
+
+            if (!response.ok) {
+                // Revert on error
+                setIsLiked(!newLiked);
+                setLikeCount(prev => newLiked ? prev - 1 : prev + 1);
+            } else {
+                const data = await response.json();
+                setLikeCount(data.likes);
+            }
+        } catch (error) {
+            console.error('Error liking presentation:', error);
+            // Revert on error
+            setIsLiked(!newLiked);
+            setLikeCount(prev => newLiked ? prev - 1 : prev + 1);
+        } finally {
+            setIsLiking(false);
         }
     };
 
@@ -62,7 +118,6 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
     const slidesCount = Presentation.dsl
         ? (Presentation.dsl.match(/SLIDE\s*\{/g) || []).length
         : (Presentation?.slides?.length || 0);
-    const likes = (Presentation as any).PresentationStats?.[0]?.likes || 0;
 
     return (
         <div className="group relative glass-card rounded-2xl overflow-hidden border border-white/10 shadow-2xl hover-lift transition-all duration-500">
@@ -109,7 +164,7 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-1 glass rounded-full border border-white/10">
                                 <Heart size={14} className="text-red-400" />
-                                <span className="text-sm text-white font-medium">{likes}</span>
+                                <span className="text-sm text-white font-medium">{likeCount}</span>
                             </div>
                         </div>
                     </div>
@@ -140,22 +195,38 @@ export default function PresentationCard({ Presentation, onDelete }: Presentatio
 
             {/* Action buttons */}
             <div className="flex items-center gap-2 px-6 pb-4 pt-2 border-t border-white/10 relative">
-                <Link
-                    href={`/presentations/${Presentation.presentation_id}/edit`}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 glass hover:glass-card text-indigo-300 hover:text-white rounded-xl transition-all text-sm font-semibold border border-white/10 hover:border-indigo-500/50"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Edit size={16} />
-                    Edit
-                </Link>
-                <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 glass hover:glass-card text-red-300 hover:text-red-200 rounded-xl transition-all text-sm font-semibold disabled:opacity-50 border border-white/10 hover:border-red-500/50"
-                >
-                    <Trash2 size={16} />
-                    {isDeleting ? 'Deleting...' : 'Delete'}
-                </button>
+                {isOwner ? (
+                    <>
+                        <Link
+                            href={`/presentations/${Presentation.presentation_id}/edit`}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 glass hover:glass-card text-indigo-300 hover:text-white rounded-xl transition-all text-sm font-semibold border border-white/10 hover:border-indigo-500/50"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Edit size={16} />
+                            Edit
+                        </Link>
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 glass hover:glass-card text-red-300 hover:text-red-200 rounded-xl transition-all text-sm font-semibold disabled:opacity-50 border border-white/10 hover:border-red-500/50"
+                        >
+                            <Trash2 size={16} />
+                            {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </>
+                ) : (
+                    <button
+                        onClick={handleLike}
+                        disabled={isLiking}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-semibold border disabled:opacity-50 ${isLiked
+                            ? 'bg-red-500/20 text-red-300 border-red-500/50 hover:bg-red-500/30'
+                            : 'glass hover:glass-card text-indigo-300 hover:text-white border-white/10 hover:border-red-500/50'
+                            }`}
+                    >
+                        <Heart size={16} className={isLiked ? 'fill-red-400' : ''} />
+                        {isLiked ? 'Liked' : 'Like'}
+                    </button>
+                )}
             </div>
 
             {/* Shimmer effect */}

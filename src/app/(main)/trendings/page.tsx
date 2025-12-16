@@ -19,7 +19,7 @@ export default function TrendingsPage() {
 
     const fetchTrendingPresentations = async () => {
         try {
-            const response = await fetch('/api/presentations?public=true&limit=50');
+            const response = await fetch('/api/presentations?public=true&limit=50&page=trendings');
             const data = await response.json();
 
             // Sort by views (trending)
@@ -123,7 +123,7 @@ export default function TrendingsPage() {
                 ) : presentations.length > 0 ? (
                     <div>
                         {/* Stats */}
-                        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="glass-card rounded-2xl p-6 border border-white/10 hover-lift">
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl">
@@ -163,7 +163,7 @@ export default function TrendingsPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Presentations Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -199,11 +199,10 @@ export default function TrendingsPage() {
                                 <button
                                     onClick={goToPreviousPage}
                                     disabled={currentPage === 1}
-                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                                        currentPage === 1
-                                            ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
-                                            : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
-                                    }`}
+                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${currentPage === 1
+                                        ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                                        : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
+                                        }`}
                                 >
                                     <ChevronLeft size={20} />
                                     <span className="hidden sm:inline">Previous</span>
@@ -213,12 +212,12 @@ export default function TrendingsPage() {
                                 <div className="flex items-center gap-2">
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                                         // Show first page, last page, current page, and pages around current
-                                        const showPage = 
-                                            page === 1 || 
-                                            page === totalPages || 
+                                        const showPage =
+                                            page === 1 ||
+                                            page === totalPages ||
                                             (page >= currentPage - 1 && page <= currentPage + 1);
-                                        
-                                        const showEllipsis = 
+
+                                        const showEllipsis =
                                             (page === currentPage - 2 && currentPage > 3) ||
                                             (page === currentPage + 2 && currentPage < totalPages - 2);
 
@@ -236,11 +235,10 @@ export default function TrendingsPage() {
                                             <button
                                                 key={page}
                                                 onClick={() => goToPage(page)}
-                                                className={`w-12 h-12 rounded-xl font-bold transition-all ${
-                                                    currentPage === page
-                                                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-500/30 scale-110'
-                                                        : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 hover:scale-105'
-                                                }`}
+                                                className={`w-12 h-12 rounded-xl font-bold transition-all ${currentPage === page
+                                                    ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-500/30 scale-110'
+                                                    : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 hover:scale-105'
+                                                    }`}
                                             >
                                                 {page}
                                             </button>
@@ -252,11 +250,10 @@ export default function TrendingsPage() {
                                 <button
                                     onClick={goToNextPage}
                                     disabled={currentPage === totalPages}
-                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                                        currentPage === totalPages
-                                            ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
-                                            : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
-                                    }`}
+                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${currentPage === totalPages
+                                        ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                                        : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30'
+                                        }`}
                                 >
                                     <span className="hidden sm:inline">Next</span>
                                     <ChevronRight size={20} />

@@ -6,19 +6,18 @@ export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
         const userId = searchParams.get('uid');
-        const isExplorePage = searchParams.get('page');
+        const pageType = searchParams.get('page');
         const limit = parseInt(searchParams.get('limit') || '10');
         const offset = parseInt(searchParams.get('offset') || '0');
         const isPublic = searchParams.get('public') === 'true';
         let query = null;
-        if (isExplorePage === 'explore') {
+        if (pageType === 'explore' || pageType == 'trendings') {
             query = supabase
                 .from('Presentation')
                 .select(`
                     *,
                     PresentationStats(*)
                 `)
-                .eq('owner_id', userId)
                 .order('created_at', { ascending: false })
                 .range(offset, offset + limit - 1);
         }
@@ -29,6 +28,7 @@ export async function GET(request: NextRequest) {
                     *,
                     PresentationStats(*)
                 `)
+                .eq('owner_id', userId)
                 .order('created_at', { ascending: false })
                 .range(offset, offset + limit - 1);
         }
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
         // }
 
         const { data, error } = await query;
+        console.log(data)
 
         if (error) {
             console.error('Supabase error:', error);

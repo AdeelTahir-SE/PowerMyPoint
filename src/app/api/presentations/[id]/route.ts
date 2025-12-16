@@ -58,7 +58,28 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { presentation_data, prompts, thumbnail } = body;
+        const { presentation_data, prompts, thumbnail, userId } = body;
+
+        // Verify ownership
+        const { data: existing, error: fetchError } = await supabase
+            .from('Presentation')
+            .select('owner_id')
+            .eq('presentation_id', id)
+            .single();
+
+        if (fetchError || !existing) {
+            return NextResponse.json(
+                { error: 'Presentation not found' },
+                { status: 404 }
+            );
+        }
+
+        if (existing.owner_id !== userId) {
+            return NextResponse.json(
+                { error: 'Unauthorized: You can only edit your own presentations' },
+                { status: 403 }
+            );
+        }
 
         const updateData: Record<string, unknown> = {};
         if (presentation_data !== undefined) updateData.presentation_data = presentation_data;
@@ -100,6 +121,29 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
+        const searchParams = request.nextUrl.searchParams;
+        const userId = searchParams.get('userId');
+
+        // Verify ownership
+        const { data: existing, error: fetchError } = await supabase
+            .from('Presentation')
+            .select('owner_id')
+            .eq('presentation_id', id)
+            .single();
+
+        if (fetchError || !existing) {
+            return NextResponse.json(
+                { error: 'Presentation not found' },
+                { status: 404 }
+            );
+        }
+
+        if (existing.owner_id !== userId) {
+            return NextResponse.json(
+                { error: 'Unauthorized: You can only delete your own presentations' },
+                { status: 403 }
+            );
+        }
 
         // Delete stats first (foreign key constraint)
         await supabase

@@ -397,7 +397,7 @@ export default function PresentationViewer({ presentation, onClose, editable, on
                 </button>
             )}
 
-            {/* SlideContnt */}
+            {/* Slide Content */}
             <div className={`absolute inset-0 flex items-center justify-center p-0 overflow-y-auto ${isFullscreen ? '' : 'top-16 bottom-16'}`}>
                 {isDsl ? (
                     <div

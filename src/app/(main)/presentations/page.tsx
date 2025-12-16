@@ -23,7 +23,7 @@ export default function PresentationsPage() {
 
     const fetchMyPresentations = async () => {
         try {
-            const response = await fetch(`/api/presentations?userId=${user?.id}`);
+            const response = await fetch(`/api/presentations?uid=${user?.id}`);
             const data = await response.json();
             setPresentations(data.data || []);
         } catch (error) {
@@ -84,10 +84,10 @@ export default function PresentationsPage() {
                             </div>
                         </div>
 
-                        <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all font-semibold shadow-lg hover:shadow-purple-500/50 hover:scale-[1.02]">
+                        {/* <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all font-semibold shadow-lg hover:shadow-purple-500/50 hover:scale-[1.02]">
                             <Plus size={20} />
                             <span className="hidden sm:inline">New Presentation</span>
-                        </button>
+                        </button> */}
                     </div>
 
                     {/* Search and Filters */}
@@ -104,10 +104,10 @@ export default function PresentationsPage() {
                         </div>
 
                         <div className="flex gap-2">
-                            <button className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-purple-500/50 text-slate-400 hover:text-white transition-all">
+                            {/* <button className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-purple-500/50 text-slate-400 hover:text-white transition-all">
                                 <Filter size={20} />
                                 <span className="hidden sm:inline text-sm font-medium">Filter</span>
-                            </button>
+                            </button> */}
 
                             <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
                                 <button

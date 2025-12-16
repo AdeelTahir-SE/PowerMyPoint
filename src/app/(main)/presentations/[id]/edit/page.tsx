@@ -9,8 +9,10 @@ import PresentationViewer from "@/components/PresentationViewer";
 import { ArrowLeft, Save, Plus, Eye } from "lucide-react";
 import Link from "next/link";
 import { updateSlideInDsl } from "@/lib/dsl";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function EditPresentationPage() {
+    const { user } = useAuth();
     const params = useParams();
     const router = useRouter();
     const [presentation, setPresentation] = useState<Presentation | null>(null);
@@ -62,6 +64,7 @@ export default function EditPresentationPage() {
             const body = dsl ? {
                 title,
                 description,
+                userId: user?.id,
                 presentation_data: {
                     ...presentation,
                     dsl,
@@ -71,6 +74,7 @@ export default function EditPresentationPage() {
             } : {
                 title,
                 description,
+                userId: user?.id,
                 slides,
             };
 
@@ -83,7 +87,8 @@ export default function EditPresentationPage() {
             if (response.ok) {
                 router.push(`/presentations/${presentation?.presentation_id}`);
             } else {
-                setError('Failed to save changes');
+                const errorData = await response.json();
+                setError(errorData.error || 'Failed to save changes');
             }
         } catch (error) {
             console.error('Error saving presentation:', error);
