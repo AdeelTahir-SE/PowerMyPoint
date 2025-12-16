@@ -5,7 +5,9 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2, AlignLeft, AlignCenter, AlignRight, Type, Image as ImageIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
-import { dslToSlides } from "@/lib/dsl";
+import { dslToSlides, htmlToDsl } from "@/lib/dsl";
+import RevealPresentationViewer from "./RevealPresentationViewer";
+import { useExperimentalMode } from "@/contexts/experimental-mode-context";
 
 interface PresentationViewerProps {
     presentation: Presentation;
@@ -17,6 +19,7 @@ interface PresentationViewerProps {
 export default function PresentationViewer({ presentation, onClose, editable, onEdit }: PresentationViewerProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const { experimentalMode } = useExperimentalMode();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const slides: (Slide | string)[] = useMemo(() => {
@@ -108,6 +111,61 @@ export default function PresentationViewer({ presentation, onClose, editable, on
         return (
             <div className="flex items-center justify-center h-96 text-gray-500">
                 No slides available
+            </div>
+        );
+    }
+
+    // If experimental mode is enabled, use Reveal.js viewer
+    if (experimentalMode) {
+        return (
+            <div
+                ref={containerRef}
+                className={`relative ${isFullscreen ? 'w-screen h-screen fixed inset-0' : 'w-full h-full min-h-[600px]'} bg-black ${isFullscreen ? 'rounded-none' : 'rounded-xl shadow-2xl'}`}
+            >
+                {/* Header - Hidden in fullscreen */}
+                {!isFullscreen && (
+                    <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 z-10">
+                        <div className="flex-1">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                {presentation.title}
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleFullscreen}
+                                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                title="Toggle fullscreen"
+                            >
+                                <Maximize2 size={20} />
+                            </button>
+                            {onClose && (
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    title="Close viewer"
+                                >
+                                    <X size={20} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Floating Exit Button for Fullscreen */}
+                {isFullscreen && (
+                    <button
+                        onClick={toggleFullscreen}
+                        className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors backdrop-blur-sm"
+                        title="Exit Fullscreen"
+                    >
+                        <Minimize2 size={24} />
+                    </button>
+                )}
+
+                {/* Reveal.js Viewer */}
+                <div className={`absolute inset-0 ${isFullscreen ? 'w-screen h-screen' : 'top-16'}`}>
+                    <RevealPresentationViewer presentation={presentation} onClose={onClose} />
+                </div>
             </div>
         );
     }
@@ -255,7 +313,7 @@ export default function PresentationViewer({ presentation, onClose, editable, on
     return (
         <div
             ref={containerRef}
-            className={`relative w-full h-full min-h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl ${isFullscreen ? 'rounded-none' : ''}`}
+            className={`relative ${isFullscreen ? 'w-screen h-screen fixed inset-0' : 'w-full h-full min-h-[600px]'} bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 ${isFullscreen ? 'rounded-none' : 'rounded-xl shadow-2xl'}`}
             onKeyDown={handleKeyDown}
             tabIndex={0}
             onClick={(e) => {
@@ -398,10 +456,10 @@ export default function PresentationViewer({ presentation, onClose, editable, on
             )}
 
             {/* Slide Content */}
-            <div className={`absolute inset-0 flex items-center justify-center p-0 overflow-y-auto ${isFullscreen ? '' : 'top-16 bottom-16'}`}>
+            <div className={`absolute inset-0 flex items-center justify-center p-0 ${isFullscreen ? 'overflow-hidden' : 'overflow-y-auto top-16 bottom-16'}`}>
                 {isDsl ? (
                     <div
-                        className="w-full bg-white text-black h-full outline-none slide-container"
+                        className={`${isFullscreen ? 'w-screen h-screen' : 'w-full h-full'} bg-white text-black outline-none slide-container presentation-slide`}
                         dangerouslySetInnerHTML={{ __html: slide as string }}
                         contentEditable={editable}
                         onBlur={handleBlur}

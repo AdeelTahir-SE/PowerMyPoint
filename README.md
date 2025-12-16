@@ -270,6 +270,11 @@ The app can be deployed to any platform that supports Next.js:
 | `GOOGLE_GEMINI_API_KEY` | Your Google Gemini API key | Yes |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+| `OPENAI_API_KEY` | OpenAI API key for ChatGPT (optional, for better outline generation) | No |
+| `PEXELS_API_KEY` | Pexels API key for image fallback (optional, for replacing broken images) | No |
+| `GOOGLE_IMAGEN_API_KEY` | Google Imagen API key for image generation fallback (optional, can use GOOGLE_GEMINI_API_KEY if compatible) | No |
+| `GOOGLE_CLOUD_PROJECT_ID` | Google Cloud Project ID (required if using Imagen API) | No |
+| `GOOGLE_CLOUD_LOCATION` | Google Cloud location (default: us-central1, required if using Imagen API) | No |
 
 ## 🤝 Contributing
 

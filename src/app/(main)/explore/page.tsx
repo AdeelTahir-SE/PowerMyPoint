@@ -2,15 +2,18 @@
 
 import PresentationCard from "@/components/PresentationCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import StreamingPresentationPreview from "@/components/StreamingPresentationPreview";
 import { Presentation } from "@/types/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Sparkles, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import { useExperimentalMode } from "@/contexts/experimental-mode-context";
 
 export default function Page() {
     const { user } = useAuth();
     const router = useRouter();
+    const { experimentalMode } = useExperimentalMode();
     const [presentations, setPresentations] = useState<Presentation[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -18,6 +21,12 @@ export default function Page() {
     const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
+    // Store slides with partial DSL that builds up incrementally
+    const [streamingSlides, setStreamingSlides] = useState<Array<{ slideIndex: number; partialDsl: string; isComplete: boolean }>>([]);
+    const [isStreaming, setIsStreaming] = useState(false);
+    const [showStreamingPreview, setShowStreamingPreview] = useState(false);
+    const [useChatGPT, setUseChatGPT] = useState(true); // Use ChatGPT for outline by default
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
         fetchPresentations(user?.id);
@@ -40,33 +49,179 @@ export default function Page() {
         e.preventDefault();
         if (!prompt.trim()) return;
 
+        console.log('🚀 [FRONTEND] Starting presentation generation');
+        console.log('📝 [FRONTEND] Prompt:', prompt);
+        console.log('👤 [FRONTEND] User ID:', user?.id || 'anonymous');
+
         setCreating(true);
         setError('');
+        setStreamingSlides([]);
+        setIsStreaming(true);
+        setShowStreamingPreview(true);
+
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
 
         try {
+            console.log('📡 [FRONTEND] Sending fetch request to /api/generate');
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     prompt,
-                    userId: user?.id
+                    userId: user?.id,
+                    experimentalMode: experimentalMode,
+                    useChatGPT: useChatGPT // Use ChatGPT for outline generation
                 }),
+                signal: abortController.signal,
+            });
+            
+            console.log('📥 [FRONTEND] Response received:', {
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries())
             });
 
-            const result = await response.json();
+            if (!response.ok) {
+                console.error('❌ [FRONTEND] Response not OK:', response.status, response.statusText);
+                throw new Error('Failed to start generation');
+            }
 
-            if (response.ok) {
+            if (!response.body) {
+                console.error('❌ [FRONTEND] No response body');
+                throw new Error('No response body');
+            }
+
+            console.log('✅ [FRONTEND] Response body available, starting to read stream');
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let eventCount = 0;
+            let chunkCount = 0;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                chunkCount++;
+
+                if (done) {
+                    console.log(`🏁 [FRONTEND] Stream ended. Total chunks: ${chunkCount}, Total events: ${eventCount}`);
+                    break;
+                }
+
+                const decoded = decoder.decode(value, { stream: true });
+                console.log(`📦 [FRONTEND] Chunk #${chunkCount} received, length:`, decoded.length);
+                buffer += decoded;
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+                console.log(`📄 [FRONTEND] Chunk #${chunkCount} split into ${lines.length} lines (buffer: ${buffer.length} chars)`);
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+
+                    try {
+                        const event = JSON.parse(line);
+                        eventCount++;
+                        console.log(`📨 [FRONTEND] Event #${eventCount} received:`, {
+                            type: event.type,
+                            slideIndex: event.slideIndex,
+                            elementType: event.elementType,
+                            isSlideComplete: event.isSlideComplete
+                        });
+
+                        switch (event.type) {
+                            case 'progress':
+                                console.log('📊 [FRONTEND] Progress:', event.message);
+                                break;
+
+                            case 'dsl:update':
+                                console.log(`📝 [FRONTEND] DSL update received:`, {
+                                    slideIndex: event.slideIndex,
+                                    dslLength: event.partialDsl?.length || 0,
+                                    isComplete: event.isComplete,
+                                    preview: event.partialDsl?.substring(0, 100) + '...'
+                                });
+                                
+                                setStreamingSlides((prev) => {
+                                    const newSlides = [...prev];
+                                    // Find or create the slide
+                                    let slide = newSlides.find(s => s.slideIndex === event.slideIndex);
+                                    if (!slide) {
+                                        console.log(`🆕 [FRONTEND] Creating new slide #${event.slideIndex}`);
+                                        slide = {
+                                            slideIndex: event.slideIndex,
+                                            partialDsl: '',
+                                            isComplete: false,
+                                        };
+                                        newSlides.push(slide);
+                                    }
+                                    
+                                    // Update the partial DSL
+                                    slide.partialDsl = event.partialDsl;
+                                    slide.isComplete = event.isComplete || false;
+                                    
+                                    console.log(`🔄 [FRONTEND] Updated slide #${event.slideIndex}, DSL length: ${slide.partialDsl.length}, complete: ${slide.isComplete}`);
+                                    
+                                    // Sort slides by index
+                                    return newSlides.sort((a, b) => a.slideIndex - b.slideIndex);
+                                });
+                                break;
+
+                            case 'complete':
+                                console.log('🎉 [FRONTEND] Generation complete!', {
+                                    presentationId: event.presentation_id,
+                                    dslLength: event.dsl?.length || 0
+                                });
+                                setIsStreaming(false);
+                                setCreating(false);
                 // Navigate to the newly created presentation
-                const presentationId = result.data.presentation_id;
-                router.push(`/presentations/${presentationId}`);
-            } else {
-                setError(result.error || 'Failed to generate presentation');
+                                if (event.presentation_id) {
+                                    console.log(`🔗 [FRONTEND] Navigating to presentation: ${event.presentation_id}`);
+                                    setTimeout(() => {
+                                        setShowStreamingPreview(false);
+                                        router.push(`/presentations/${event.presentation_id}`);
+                                    }, 1000); // Small delay to show completion
+                                }
+                                break;
+
+                            case 'error':
+                                console.error('❌ [FRONTEND] Error event received:', event.message);
+                                setError(event.message || 'Failed to generate presentation');
+                                setIsStreaming(false);
+                                setCreating(false);
+                                setShowStreamingPreview(false);
+                                break;
+                                
+                            default:
+                                console.log(`⚠️ [FRONTEND] Unknown event type: ${event.type}`);
+                        }
+                    } catch (parseError) {
+                        console.error('❌ [FRONTEND] Error parsing event:', parseError);
+                        console.error('❌ [FRONTEND] Problematic line:', line);
+                    }
+                }
             }
         } catch (error) {
-            console.error('Error creating presentation:', error);
-            setError('Failed to generate presentation');
-        } finally {
+            // Don't show error if request was aborted by user
+            if (error instanceof Error && error.name === 'AbortError') {
+                console.log('🛑 [FRONTEND] Generation cancelled by user');
+                return;
+            }
+            
+            console.error('❌ [FRONTEND] Error creating presentation:', error);
+            console.error('❌ [FRONTEND] Error details:', {
+                name: error instanceof Error ? error.name : 'Unknown',
+                message: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : undefined
+            });
+            setError(error instanceof Error ? error.message : 'Failed to generate presentation');
+            setIsStreaming(false);
             setCreating(false);
+            setShowStreamingPreview(false);
+        } finally {
+            console.log('🧹 [FRONTEND] Cleaning up, abortController reset');
+            abortControllerRef.current = null;
         }
     };
 
@@ -125,32 +280,53 @@ export default function Page() {
                             </h2>
                         </div>
 
-                        <div className="flex gap-4">
-                            <input
-                                type="text"
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                placeholder="Describe your presentation... e.g., 'Create a presentation about climate change'"
-                                className="flex-1 px-6 py-4 glass border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-indigo-200/50 text-lg transition-all"
-                                disabled={creating}
-                            />
-                            <button
-                                type="submit"
-                                disabled={creating || !prompt.trim()}
-                                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold flex items-center gap-3 whitespace-nowrap shadow-xl hover-lift hover-glow"
-                            >
-                                {creating ? (
-                                    <>
-                                        <LoadingSpinner size={20} />
-                                        <span>Generating...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles size={20} />
-                                        <span>Create</span>
-                                    </>
-                                )}
-                            </button>
+                        <div className="space-y-4">
+                            <div className="flex gap-4">
+                                <input
+                                    type="text"
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    placeholder="Describe your presentation... e.g., 'Create a presentation about climate change'"
+                                    className="flex-1 px-6 py-4 glass border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/5 text-white placeholder-indigo-200/50 text-lg transition-all"
+                                    disabled={creating}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={creating || !prompt.trim()}
+                                    className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold flex items-center gap-3 whitespace-nowrap shadow-xl hover-lift hover-glow"
+                                >
+                                    {creating ? (
+                                        <>
+                                            <LoadingSpinner size={20} />
+                                            <span>Generating...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={20} />
+                                            <span>Create</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                            
+                            {/* AI Model Selection */}
+                            <div className="flex items-center gap-3 px-4 py-3 glass border border-white/10 rounded-lg">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={useChatGPT}
+                                        onChange={(e) => setUseChatGPT(e.target.checked)}
+                                        disabled={creating}
+                                        className="w-4 h-4 rounded border-white/30 bg-white/10 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
+                                    />
+                                    <span className="text-sm text-white/90">
+                                        Use ChatGPT for better planning (requires OPENAI_API_KEY)
+                                    </span>
+                                </label>
+                                <span className="text-xs text-purple-300/70 ml-auto">
+                                    {useChatGPT ? 'ChatGPT + Gemini' : 'Gemini only'}
+                                </span>
+                            </div>
                         </div>
 
                         {error && (
@@ -231,6 +407,27 @@ export default function Page() {
                     </div>
                 )}
             </div>
+
+            {/* Streaming Preview Modal */}
+            {showStreamingPreview && (
+                <StreamingPresentationPreview
+                    slides={streamingSlides}
+                    isStreaming={isStreaming}
+                    onClose={() => {
+                        if (abortControllerRef.current) {
+                            abortControllerRef.current.abort();
+                        }
+                        setShowStreamingPreview(false);
+                        setIsStreaming(false);
+                        setCreating(false);
+                        setStreamingSlides([]);
+                    }}
+                    onComplete={(presentationId) => {
+                        setShowStreamingPreview(false);
+                        router.push(`/presentations/${presentationId}`);
+                    }}
+                />
+            )}
         </div>
     );
 }
