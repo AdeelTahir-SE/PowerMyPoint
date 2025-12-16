@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Twitter, Github, Linkedin } from 'lucide-react';
 
 export const Footer = () => {
   return (
@@ -10,6 +11,17 @@ export const Footer = () => {
           <p className="text-slate-400 text-sm max-w-xs">
             AI-powered presentation generator. Turn ideas into stunning slides in seconds.
           </p>
+          <div className="flex gap-4 mt-4">
+            <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              <Twitter className="h-5 w-5" />
+            </Link>
+            <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              <Github className="h-5 w-5" />
+            </Link>
+            <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              <Linkedin className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-10">
           <div className="flex flex-col gap-4">

@@ -27,7 +27,7 @@ export const PricingSection = () => {
               </p>
               <div className="flex-1">
                 <ul className="space-y-4 mb-8">
-                  {['Basic features', 'Limited templates', 'Standard support'].map((feature) => (
+                  {['5 Prompts per month', 'Public Presentations', 'Standard Support', 'Core Templates', 'Export to PDF'].map((feature) => (
                     <li key={feature} className="flex items-center text-neutral-600 dark:text-neutral-300">
                       <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
                       {feature}
@@ -45,19 +45,19 @@ export const PricingSection = () => {
             <div className="flex flex-col h-full">
               <div className="flex justify-between items-center mt-4 mb-2">
                 <p className="text-base sm:text-xl text-black dark:text-neutral-200">
-                  Premium Plan
+                  Pro Plan
                 </p>
                 <span className="bg-zinc-700 text-white text-xs px-2 py-1 rounded-full">Most Popular</span>
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                Unlocked full potential with unlimited access.
+                Unlock full potential with verified privacy.
               </p>
               <p className="text-4xl font-bold text-black dark:text-white mt-6 mb-6">
                 $19 <span className="text-base font-normal text-neutral-600 dark:text-neutral-400">/month</span>
               </p>
               <div className="flex-1">
                 <ul className="space-y-4 mb-8">
-                  {['All features', 'Unlimited templates', 'Priority support', 'Custom branding', 'Analytics'].map((feature) => (
+                  {['20 Presentations per month', 'Private Presentations', 'Priority Support', 'Custom Branding', 'Export to Editable PPTX'].map((feature) => (
                     <li key={feature} className="flex items-center text-neutral-600 dark:text-neutral-300">
                       <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-500" />
                       {feature}

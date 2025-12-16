@@ -3,6 +3,7 @@ import { FAQSection } from "@/components/FAQSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
+import { OurUsersSection } from "@/components/OurUsersSection";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { Navbar } from "@/components/Navbar";
 import { PricingSection } from "@/components/PricingSection";
@@ -18,6 +19,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex flex-1 flex-col relative z-10">
         <HeroSection />
+        <OurUsersSection />
         <FeaturesSection />
         <HowItWorksSection />
         <DSLShowcaseSection />
