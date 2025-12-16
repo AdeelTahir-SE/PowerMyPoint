@@ -17,10 +17,10 @@ export const Navbar: React.FC = () => {
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">PowerMyPoint</h2>
       </div>
       <nav className="hidden items-center gap-8 md:flex">
-        <a className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="#">Product</a>
-        <a className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="#">Solutions</a>
-        <a className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="#">Resources</a>
-        <a className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="#">Pricing</a>
+        <Link className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="/#features">Features</Link>
+        <Link className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="/#how-it-works">How It Works</Link>
+        <Link className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="/docs">Documentation</Link>
+        <Link className="text-sm font-medium text-slate-600 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="/#pricing">Pricing</Link>
       </nav>
       <div className="flex items-center gap-2">
         <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200/50 dark:text-slate-300 dark:hover:bg-slate-800/50">

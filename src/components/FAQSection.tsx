@@ -7,10 +7,10 @@ export const FAQSection = () => {
     <section className="w-full bg-slate-50 dark:bg-black py-20 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
             Frequently Asked Questions
           </h2>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400">
             Everything you need to know about PowerMyPoint.
           </p>
         </div>

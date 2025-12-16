@@ -5,12 +5,12 @@ import { CheckCircle2 } from "lucide-react";
 
 export const PricingSection = () => {
   return (
-    <section className="w-full bg-slate-950 py-20 px-4">
+    <section id="pricing" className="w-full bg-slate-950 py-20 px-4">
       <div className="max-w-5xl mx-auto px-8">
-        <h2 className="text-3xl font-bold text-center mb-8 text-white">
+        <h2 className="text-5xl md:text-7xl font-bold text-center mb-10 text-white">
           Simple, Transparent Pricing
         </h2>
-        <p className="text-center text-slate-400 mb-16 max-w-2xl mx-auto">
+        <p className="text-center text-xl md:text-2xl text-slate-400 mb-20 max-w-2xl mx-auto">
           Choose the plan that's right for you. No hidden fees.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

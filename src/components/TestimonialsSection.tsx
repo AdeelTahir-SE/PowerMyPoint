@@ -4,7 +4,7 @@ import { InfiniteMovingCards } from './ui/infinite-moving-cards';
 export const TestimonialsSection: React.FC = () => {
   return (
     <section className="h-[40rem] rounded-md flex flex-col antialiased bg-white dark:bg-black dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
-      <h2 className="text-3xl font-bold text-center mb-8 z-10 text-gray-900 dark:text-white">Loved by innovators everywhere</h2>
+      <h2 className="text-5xl md:text-7xl font-bold text-center mb-12 z-10 text-gray-900 dark:text-white">Loved by innovators everywhere</h2>
       <InfiniteMovingCards
         items={testimonials}
         direction="right"

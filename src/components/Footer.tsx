@@ -11,7 +11,7 @@ export const Footer = () => {
             AI-powered presentation generator. Turn ideas into stunning slides in seconds.
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-10">
           <div className="flex flex-col gap-4">
             <h4 className="text-white font-semibold">Product</h4>
             <Link href="#" className="text-slate-400 hover:text-white text-sm">Features</Link>
@@ -29,15 +29,20 @@ export const Footer = () => {
             <Link href="#" className="text-slate-400 hover:text-white text-sm">Privacy</Link>
             <Link href="#" className="text-slate-400 hover:text-white text-sm">Terms</Link>
           </div>
+          <div className="flex flex-col gap-4">
+            <h4 className="text-white font-semibold">Developers</h4>
+            <p className="text-slate-400 text-sm">PowerMyPoint DSL</p>
+            <Link href="/docs" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Documentation &rarr;</Link>
+          </div>
         </div>
       </div>
 
-      <div className="w-full relative">
-        <h1 className="text-[12vw] sm:text-[13vw] font-bold text-slate-800/50 text-center leading-none select-none pointer-events-none">
+      <div className="w-full relative flex flex-col items-center justify-center gap-4 py-10">
+        <h1 className="text-5xl md:text-9xl font-bold text-slate-800/30 text-center leading-none select-none pointer-events-none tracking-widest">
           POWERMYPOINT
         </h1>
-        <div className="absolute bottom-4 w-full text-center">
-          <p className="text-slate-600 text-xs">
+        <div className="text-center mt-4">
+          <p className="text-slate-600 text-sm">
             © {new Date().getFullYear()} PowerMyPoint. All rights reserved.
           </p>
         </div>
