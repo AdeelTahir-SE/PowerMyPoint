@@ -24,7 +24,7 @@ export default function PresentationViewer({ presentation, onClose, editable, on
             return dslToSlides(presentation.dsl);
         }
         return presentation.slides || [];
-    }, [presentation]);
+    }, [presentation.dsl, presentation.slides]);
 
     const totalSlides = slides.length;
 
@@ -85,9 +85,11 @@ export default function PresentationViewer({ presentation, onClose, editable, on
 
     const [editedSlides, setEditedSlides] = useState<(Slide | string)[]>(slides);
 
-    // Sync editedSlides when external slides prop changes
+    // Sync editedSlides when external slides prop changes (from DSL textarea updates)
     useEffect(() => {
         setEditedSlides(slides);
+        // Reset selection when slides change externally
+        setSelectedElement(null);
     }, [slides]);
 
     // Use editedSlides for rendering
