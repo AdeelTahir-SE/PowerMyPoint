@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
                  classes = "relative w-full min-h-screen overflow-hidden";
                  children = [
                    img {
-                     content = "https://images.unsplash.com/photo-example?auto=format&fit=crop&w=1920&q=80";
+                     content = "Image URL";
                      classes = "absolute inset-0 w-full h-full object-cover";
                    };
                  ];
