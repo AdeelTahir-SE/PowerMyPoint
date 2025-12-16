@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
-        const { user_id, ...updates } = body;
+        const { user_id, email, name, ...otherUpdates } = body;
 
         if (!user_id) {
             return NextResponse.json(
@@ -124,9 +124,35 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
+        // Prepare updates for User table
+        const userTableUpdates: any = { ...otherUpdates };
+        if (name !== undefined) {
+            userTableUpdates.name = name;
+        }
+
+        // Update email in Supabase Auth if provided
+        if (email) {
+            const { error: authError } = await supabase.auth.admin.updateUserById(
+                user_id,
+                { email: email }
+            );
+
+            if (authError) {
+                console.error('Supabase Auth email update error:', authError);
+                return NextResponse.json(
+                    { error: 'Failed to update email in authentication system' },
+                    { status: 500 }
+                );
+            }
+
+            // Also update email in User table
+            userTableUpdates.email = email;
+        }
+
+        // Update User table
         const { data, error } = await supabase
             .from('User')
-            .update(updates)
+            .update(userTableUpdates)
             .eq('user_id', user_id)
             .select()
             .single();
@@ -134,7 +160,7 @@ export async function PATCH(request: NextRequest) {
         if (error) {
             console.error('Supabase update error:', error);
             return NextResponse.json(
-                { error: 'Failed to update user' },
+                { error: 'Failed to update user profile' },
                 { status: 500 }
             );
         }

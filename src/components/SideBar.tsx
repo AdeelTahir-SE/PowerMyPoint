@@ -1,12 +1,13 @@
 "use client"
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, Compass, FileText, TrendingUp, Settings, LogOut, User, Sparkles, Upload, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 
 export default function SideBar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, signOut } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -119,7 +120,10 @@ export default function SideBar() {
 
                     {/* Logout Button */}
                     <button
-                        onClick={() => signOut()}
+                        onClick={async () => {
+                            await signOut();
+                            router.push('/login');
+                        }}
                         className="w-full mt-2 flex items-center justify-start gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-300 group"
                     >
                         <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
