@@ -75,7 +75,7 @@ export default function Page() {
                 }),
                 signal: abortController.signal,
             });
-            
+
             console.log('📥 [FRONTEND] Response received:', {
                 ok: response.ok,
                 status: response.status,
@@ -142,7 +142,7 @@ export default function Page() {
                                     isComplete: event.isComplete,
                                     preview: event.partialDsl?.substring(0, 100) + '...'
                                 });
-                                
+
                                 setStreamingSlides((prev) => {
                                     const newSlides = [...prev];
                                     // Find or create the slide
@@ -156,13 +156,13 @@ export default function Page() {
                                         };
                                         newSlides.push(slide);
                                     }
-                                    
+
                                     // Update the partial DSL
                                     slide.partialDsl = event.partialDsl;
                                     slide.isComplete = event.isComplete || false;
-                                    
+
                                     console.log(`🔄 [FRONTEND] Updated slide #${event.slideIndex}, DSL length: ${slide.partialDsl.length}, complete: ${slide.isComplete}`);
-                                    
+
                                     // Sort slides by index
                                     return newSlides.sort((a, b) => a.slideIndex - b.slideIndex);
                                 });
@@ -175,7 +175,7 @@ export default function Page() {
                                 });
                                 setIsStreaming(false);
                                 setCreating(false);
-                // Navigate to the newly created presentation
+                                // Navigate to the newly created presentation
                                 if (event.presentation_id) {
                                     console.log(`🔗 [FRONTEND] Navigating to presentation: ${event.presentation_id}`);
                                     setTimeout(() => {
@@ -192,7 +192,7 @@ export default function Page() {
                                 setCreating(false);
                                 setShowStreamingPreview(false);
                                 break;
-                                
+
                             default:
                                 console.log(`⚠️ [FRONTEND] Unknown event type: ${event.type}`);
                         }
@@ -208,7 +208,7 @@ export default function Page() {
                 console.log('🛑 [FRONTEND] Generation cancelled by user');
                 return;
             }
-            
+
             console.error('❌ [FRONTEND] Error creating presentation:', error);
             console.error('❌ [FRONTEND] Error details:', {
                 name: error instanceof Error ? error.name : 'Unknown',
@@ -308,7 +308,7 @@ export default function Page() {
                                     )}
                                 </button>
                             </div>
-                            
+
                             {/* AI Model Selection */}
                             <div className="flex items-center gap-3 px-4 py-3 glass border border-white/10 rounded-lg">
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -320,7 +320,7 @@ export default function Page() {
                                         className="w-4 h-4 rounded border-white/30 bg-white/10 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
                                     />
                                     <span className="text-sm text-white/90">
-                                        Use ChatGPT for better planning (requires OPENAI_API_KEY)
+                                        Use ChatGPT for better planning
                                     </span>
                                 </label>
                                 <span className="text-xs text-purple-300/70 ml-auto">
