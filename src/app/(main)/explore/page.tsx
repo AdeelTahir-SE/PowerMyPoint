@@ -1,33 +1,85 @@
+/**
+ * Explore Page
+ * 
+ * DESIGN SPECIFICATION:
+ * Main discovery page for browsing and creating presentations.
+ * Features:
+ * - Browse public presentations with pagination
+ * - Create new presentations with AI generation
+ * - Real-time streaming preview during generation
+ * - Search and filter capabilities
+ * - Toggle between ChatGPT and Gemini for outline generation
+ * 
+ * ARCHITECTURE:
+ * - Server-side streaming for real-time presentation generation
+ * - Incremental DSL parsing and rendering
+ * - Abort controller for cancellable generation
+ * - Pagination for performance with large datasets
+ * 
+ * STYLING:
+ * - Dark theme with glassmorphism
+ * - Purple/indigo gradient accents
+ * - Animated background orbs
+ * - Responsive grid layout
+ */
 'use client';
 
 import PresentationCard from "@/components/PresentationCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StreamingPresentationPreview from "@/components/StreamingPresentationPreview";
 import { Presentation } from "@/types/types";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Sparkles, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useExperimentalMode } from "@/contexts/experimental-mode-context";
 
 export default function Page() {
+    // AUTHENTICATION & ROUTING:
     const { user } = useAuth();
     const router = useRouter();
     const { experimentalMode } = useExperimentalMode();
+
+    // STATE MANAGEMENT:
+    // Core data state
     const [presentations, setPresentations] = useState<Presentation[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Generation state
     const [creating, setCreating] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [error, setError] = useState('');
+
+    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
-    // Store slides with partial DSL that builds up incrementally
+
+    // STREAMING STATE:
+    // Real-time slide generation with incremental DSL building
+    // - streamingSlides: Array of slides being built incrementally
+    // - isStreaming: Flag indicating active stream
+    // - showStreamingPreview: Controls preview modal visibility
     const [streamingSlides, setStreamingSlides] = useState<Array<{ slideIndex: number; partialDsl: string; isComplete: boolean }>>([]);
     const [isStreaming, setIsStreaming] = useState(false);
     const [showStreamingPreview, setShowStreamingPreview] = useState(false);
-    const [useChatGPT, setUseChatGPT] = useState(true); // Use ChatGPT for outline by default
+
+    // AI MODEL SELECTION:
+    // Toggle between ChatGPT (better planning) and Gemini-only
+    const [useChatGPT, setUseChatGPT] = useState(true);
+
+    // ABORT CONTROLLER:
+    // Allows cancellation of in-progress generation
     const abortControllerRef = useRef<AbortController | null>(null);
 
+    /**
+     * DATA FETCHING:
+     * Loads public presentations on mount and when user changes
+     * 
+     * API PARAMETERS:
+     * - public=true: Only fetch publicly visible presentations
+     * - uid: Filter by user ID if provided
+     * - page=explore: Context for backend filtering
+     */
     useEffect(() => {
         fetchPresentations(user?.id);
     }, [user?.id]);
@@ -45,6 +97,27 @@ export default function Page() {
         }
     };
 
+    /**
+     * PRESENTATION GENERATION HANDLER:
+     * Handles AI-powered presentation creation with real-time streaming
+     * 
+     * STREAMING ARCHITECTURE:
+     * 1. Sends prompt to /api/generate endpoint
+     * 2. Receives Server-Sent Events (SSE) stream
+     * 3. Parses JSON events line-by-line
+     * 4. Updates UI incrementally as slides are generated
+     * 5. Navigates to final presentation on completion
+     * 
+     * EVENT TYPES:
+     * - progress: Status updates
+     * - dsl:update: Incremental slide content
+     * - complete: Generation finished with presentation ID
+     * - error: Generation failed
+     * 
+     * CANCELLATION:
+     * - Uses AbortController for clean cancellation
+     * - Properly cleans up on abort
+     */
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!prompt.trim()) return;
@@ -225,22 +298,47 @@ export default function Page() {
         }
     };
 
-    const handleDelete = (id: string) => {
+    /**
+     * DELETE HANDLER:
+     * Removes presentation from local state after deletion
+     * 
+     * PERFORMANCE:
+     * - Wrapped in useCallback to prevent PresentationCard re-renders
+     * - Dependency on presentations ensures fresh data
+     */
+    const handleDelete = useCallback((id: string) => {
         setPresentations(presentations.filter(p => p.presentation_id !== id));
-    };
+    }, [presentations]);
 
-    // Pagination calculations
+    // PAGINATION CALCULATIONS:
+    // Splits presentations into pages for better performance
     const totalPages = Math.ceil(presentations.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPresentations = presentations.slice(startIndex, endIndex);
 
+    /**
+     * PAGE NAVIGATION:
+     * Handles pagination with smooth scroll to top
+     */
     const goToPage = (page: number) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
+        /**
+         * PAGE LAYOUT:
+         * - Full-height flex column
+         * - Gradient background with animated orbs
+         * - Fixed header with glassmorphism
+         * - Responsive grid for presentation cards
+         * 
+         * BACKGROUND DESIGN:
+         * - Dark slate gradient base
+         * - Three animated orbs with pulse/float animations
+         * - Blur effects for depth
+         */
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 water-bg">
             {/* Animated background orbs */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
