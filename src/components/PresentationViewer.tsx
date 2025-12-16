@@ -2,10 +2,10 @@
 
 import { Presentation, Slide } from "@/types/types";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2, AlignLeft, AlignCenter, AlignRight, Type, Image as ImageIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
-import { dslToSlides, htmlToDsl } from "@/lib/dsl";
+import { dslToSlides } from "@/lib/dsl";
 
 interface PresentationViewerProps {
     presentation: Presentation;
@@ -83,16 +83,21 @@ export default function PresentationViewer({ presentation, onClose, editable, on
         };
     }, []);
 
-    const slide = slides[currentSlide];
+    const [editedSlides, setEditedSlides] = useState<(Slide | string)[]>(slides);
+
+    // Sync editedSlides when external slides prop changes
+    useEffect(() => {
+        setEditedSlides(slides);
+    }, [slides]);
+
+    // Use editedSlides for rendering
+    const slide = editedSlides[currentSlide];
     const isDsl = typeof slide === 'string';
 
     const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
         if (editable && onEdit && isDsl) {
             const html = e.currentTarget.innerHTML;
-            const newDsl = htmlToDsl(html);
-            if (newDsl) {
-                onEdit(currentSlide, newDsl);
-            }
+            triggerUpdate(); // Use centralized update logic
         }
     };
 
@@ -105,18 +110,251 @@ export default function PresentationViewer({ presentation, onClose, editable, on
         );
     }
 
+    const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+    const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
+    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+    // Auto-clear feedback
+    const handleElementClick = (e: React.MouseEvent) => {
+        if (!editable || isFullscreen) return;
+
+        const target = e.target as HTMLElement;
+        if (['H1', 'H2', 'H3', 'P', 'LI', 'SPAN', 'DIV', 'IMG'].includes(target.tagName)) {
+            // e.preventDefault();
+            e.stopPropagation();
+            setSelectedElement(target);
+
+            const rect = target.getBoundingClientRect();
+            const containerRect = containerRef.current?.getBoundingClientRect();
+
+            if (containerRect) {
+                setToolbarPosition({
+                    top: rect.top - containerRect.top - 60,
+                    left: rect.left - containerRect.left
+                });
+            }
+        } else {
+            setSelectedElement(null);
+        }
+    };
+
+    // Auto-clear feedback
+    useEffect(() => {
+        if (feedbackMessage) {
+            const timer = setTimeout(() => setFeedbackMessage(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [feedbackMessage]);
+
+    // Inject styles for editor interaction
+    useEffect(() => {
+        if (editable && containerRef.current) {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .slide-container h1, .slide-container h2, .slide-container h3, 
+                .slide-container p, .slide-container li, .slide-container img {
+                    cursor: pointer;
+                    transition: outline 0.2s;
+                }
+                .slide-container h1:hover, .slide-container h2:hover, .slide-container h3:hover, 
+                .slide-container p:hover, .slide-container li:hover, .slide-container img:hover {
+                    outline: 2px dashed rgba(99, 102, 241, 0.5); /* indigo-500/50 */
+                }
+            `;
+            containerRef.current.appendChild(style);
+            return () => {
+                if (containerRef.current) {
+                    try { containerRef.current.removeChild(style); } catch (e) { }
+                }
+            }
+        }
+    }, [editable, currentSlide]);
+
+    const triggerUpdate = () => {
+        if (onEdit && containerRef.current && isDsl) {
+            const dslContainer = containerRef.current.querySelector('[contenteditable]');
+            if (dslContainer) {
+                const html = dslContainer.innerHTML;
+
+                // Update local state to prevent re-renders from reverting changes
+                setEditedSlides(prev => {
+                    const copy = [...prev];
+                    copy[currentSlide] = html;
+                    return copy;
+                });
+
+                // Notify parent
+                onEdit(currentSlide, html);
+            }
+        }
+    }
+
+    const updateElementStyle = (classNameToAdd: string, classPatternToRemove: RegExp) => {
+        if (!selectedElement) return;
+
+        const currentClasses = selectedElement.className;
+        const newClasses = currentClasses.replace(classPatternToRemove, '').trim() + ' ' + classNameToAdd;
+        selectedElement.className = newClasses.trim();
+
+        // Trigger update immediately to capture the DOM change into state
+        triggerUpdate();
+        setFeedbackMessage(`Style updated: ${classNameToAdd.replace('text-', '').replace('font-', '')}`);
+
+        // Update selection rect if needed
+        const rect = selectedElement.getBoundingClientRect();
+        const containerRect = containerRef.current?.getBoundingClientRect();
+        if (containerRect) {
+            setToolbarPosition({
+                top: rect.top - containerRect.top - 60,
+                left: rect.left - containerRect.left
+            });
+        }
+    };
+
+    const updateImageSrc = (newSrc: string) => {
+        if (!selectedElement || selectedElement.tagName !== 'IMG') return;
+        selectedElement.setAttribute('src', newSrc);
+        triggerUpdate();
+        setFeedbackMessage("Image updated successfully");
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        if (!editable) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target?.result as string;
+
+                // If dropped on an image, replace it
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'IMG') {
+                    target.setAttribute('src', base64);
+                    setFeedbackMessage("Image replaced");
+                } else if (selectedElement && selectedElement.tagName === 'IMG') {
+                    // Or if an image is selected
+                    selectedElement.setAttribute('src', base64);
+                    setFeedbackMessage("Image replaced");
+                }
+                triggerUpdate();
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        if (!editable) return;
+        e.preventDefault();
+    }
+
     return (
         <div
             ref={containerRef}
             className={`relative w-full h-full min-h-[600px] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-2xl ${isFullscreen ? 'rounded-none' : ''}`}
             onKeyDown={handleKeyDown}
             tabIndex={0}
-            // Ensure focus for key events
             onClick={(e) => {
-                // Only focus container if not clicking on editable content
                 if (!editable) e.currentTarget.focus();
+                // Deselect if clicking background
+                if (e.target === e.currentTarget || e.target === containerRef.current?.querySelector('.slide-container')) {
+                    setSelectedElement(null);
+                }
             }}
         >
+            {/* Feedback Toast */}
+            {feedbackMessage && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[100] bg-black/80 text-white px-4 py-2 rounded-full text-sm font-medium animate-in fade-in slide-in-from-top-4">
+                    {feedbackMessage}
+                </div>
+            )}
+
+            {/* Selection Overlay Border */}
+            {editable && selectedElement && containerRef.current && (() => {
+                const rect = selectedElement.getBoundingClientRect();
+                const containerRect = containerRef.current.getBoundingClientRect();
+                return (
+                    <div
+                        className="absolute border-2 border-indigo-500 pointer-events-none z-10 transition-all duration-200"
+                        style={{
+                            top: rect.top - containerRect.top,
+                            left: rect.left - containerRect.left,
+                            width: rect.width,
+                            height: rect.height,
+                        }}
+                    />
+                );
+            })()}
+
+            {/* Toolbar */}
+            {editable && selectedElement && (
+                <div
+                    className="absolute z-50 bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-200 dark:border-gray-700 p-2 flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200"
+                    style={{
+                        top: Math.max(10, toolbarPosition.top),
+                        left: Math.max(10, toolbarPosition.left)
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking toolbar
+                >
+                    {/* Text Controls */}
+                    {['H1', 'H2', 'H3', 'P', 'LI', 'SPAN', 'DIV'].includes(selectedElement.tagName) && (
+                        <>
+                            <div className="flex items-center gap-1 border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
+                                <button onClick={() => updateElementStyle('text-left', /text-(center|right|justify)/g)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><AlignLeft size={16} /></button>
+                                <button onClick={() => updateElementStyle('text-center', /text-(left|right|justify)/g)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><AlignCenter size={16} /></button>
+                                <button onClick={() => updateElementStyle('text-right', /text-(left|center|justify)/g)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><AlignRight size={16} /></button>
+                            </div>
+
+                            <div className="flex items-center gap-1 border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
+                                <button onClick={() => updateElementStyle('font-bold', /font-(normal|light|medium)/g)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded font-bold">B</button>
+                                <button onClick={() => updateElementStyle('italic', /italic/g)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded italic">I</button>
+                            </div>
+
+                            <select
+                                className="bg-transparent text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 mr-2"
+                                onChange={(e) => updateElementStyle(e.target.value, /text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl)/g)}
+                            >
+                                <option value="">Size</option>
+                                <option value="text-sm">Small</option>
+                                <option value="text-base">Normal</option>
+                                <option value="text-xl">Large</option>
+                                <option value="text-2xl">XL</option>
+                                <option value="text-4xl">2XL</option>
+                                <option value="text-6xl">4XL</option>
+                            </select>
+
+                            <div className="flex gap-1">
+                                {['text-slate-900', 'text-white', 'text-indigo-600', 'text-emerald-500', 'text-red-500'].map(color => (
+                                    <button
+                                        key={color}
+                                        className={`w-4 h-4 rounded-full border border-gray-300 ${color.replace('text-', 'bg-')}`}
+                                        onClick={() => updateElementStyle(color, /text-(slate|gray|white|black|indigo|purple|emerald|red|blue|orange|yellow|green|pink)-(50|100|200|300|400|500|600|700|800|900|950)/g)}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Image Controls */}
+                    {selectedElement.tagName === 'IMG' && (
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                placeholder="Image URL..."
+                                className="text-xs px-2 py-1 border rounded bg-transparent w-40"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') updateImageSrc(e.currentTarget.value);
+                                }}
+                            />
+                            <span className="text-xs text-gray-400">or drop image</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Header - Hidden in fullscreen */}
             {!isFullscreen && (
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 z-10">
@@ -161,10 +399,13 @@ export default function PresentationViewer({ presentation, onClose, editable, on
             <div className={`absolute inset-0 flex items-center justify-center p-0 overflow-y-auto ${isFullscreen ? '' : 'top-16 bottom-16'}`}>
                 {isDsl ? (
                     <div
-                        className="w-full h-full outline-none"
+                        className="w-full h-full outline-none slide-container"
                         dangerouslySetInnerHTML={{ __html: slide as string }}
                         contentEditable={editable}
                         onBlur={handleBlur}
+                        onClick={handleElementClick}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
                         suppressContentEditableWarning={true}
                     />
                 ) : (

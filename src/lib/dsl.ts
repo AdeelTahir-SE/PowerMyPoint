@@ -222,7 +222,10 @@ export function htmlToDsl(html: string): string {
 
 export function updateSlideInDsl(dsl: string, index: number, newSlideHtml: string): string {
     const newSlideDsl = htmlToDsl(newSlideHtml);
-    if (!newSlideDsl) return dsl;
+    if (!newSlideDsl) {
+        console.warn("Failed to convert HTML to DSL", newSlideHtml);
+        return dsl;
+    }
 
     // We need to locate the Nth SLIDE block and replace it.
     // We can reuse the parsing logic logic to find offsets.
