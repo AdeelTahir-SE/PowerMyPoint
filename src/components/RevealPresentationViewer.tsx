@@ -6,7 +6,7 @@ import { dslToSlides } from '@/lib/dsl';
 
 // Styles
 import 'reveal.js/dist/reveal.css';
-import 'reveal.js/dist/theme/black.css'; // Or your preferred theme
+import 'reveal.js/dist/theme/black.css';
 
 interface RevealPresentationViewerProps {
     presentation: Presentation;
@@ -76,7 +76,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
             revealInstance = new Reveal(revealRef.current, {
                 // CRITICAL FOR COMPONENT VIEW
                 embedded: true, // Tells Reveal it is inside a div, not the body
-                
+
                 // DIMENSIONS & SCALING
                 width: 960,
                 height: 700,
@@ -90,7 +90,7 @@ export default function RevealPresentationViewer({ presentation, onClose }: Reve
                 center: true,
                 hash: false, // Disable hash so it doesn't mess with Next.js router
                 mouseWheel: false, // Prevent scrolling page from changing slides unintentionally
-                
+
                 // TRANSITIONS
                 transition: 'slide',
                 backgroundTransition: 'fade',

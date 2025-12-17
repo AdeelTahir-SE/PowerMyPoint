@@ -310,12 +310,11 @@ export default function StreamingPresentationPreview({
                     });
                 }
             } catch (error) {
-                console.error('Error initializing Reveal.js:', error);
+                console.error('Error initializing Reveal.js package:', error);
             }
         };
 
         initReveal();
-
         return () => {
             if (revealInstanceRef.current && !experimentalMode) {
                 try {
