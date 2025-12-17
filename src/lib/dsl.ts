@@ -1,5 +1,7 @@
 import { getIconSvg } from './icons';
 
+const MAX_PARSE_DEPTH = 200;
+
 export function dslToSlides(dsl: string): string[] {
     // Extract slides array content
     const slidesMatch = dsl.match(/slides\s*=\s*\[([\s\S]*)\]\s*;?\s*}\s*;?\s*$/);
@@ -61,7 +63,7 @@ export function dslToSlides(dsl: string): string[] {
         const slideContent = block.content.substring(block.content.indexOf("{") + 1, block.content.lastIndexOf("}"));
         
         // parseElement now skips data attributes automatically, so we can parse the entire content
-        let html = parseElement(slideContent);
+        let html = parseElement(slideContent, 0);
         
         // If html is still empty, log a warning with more details
         if (!html || html.trim().length === 0) {
@@ -88,7 +90,10 @@ export function dslToSlides(dsl: string): string[] {
     });
 }
 
-function parseElement(content: string): string {
+function parseElement(content: string, depth = 0): string {
+    if (depth > MAX_PARSE_DEPTH) {
+        throw new Error(`DSL recursion too deep (>${MAX_PARSE_DEPTH})`);
+    }
     content = content.trim();
     let html = "";
     let i = 0;
@@ -143,7 +148,7 @@ function parseElement(content: string): string {
         while (i < content.length && (content[i] === ";" || /\s/.test(content[i]))) i++;
 
         // Parse attributes from inner content
-        const attrs = parseAttributes(inner);
+        const attrs = parseAttributes(inner, depth + 1);
 
         // Build HTML
         const selfClosing = ["img", "input", "br", "hr"];
@@ -168,7 +173,7 @@ function parseElement(content: string): string {
     return html;
 }
 
-function parseAttributes(inner: string): { classes?: string; content?: string; childrenHtml?: string; dataAttributes?: string } {
+function parseAttributes(inner: string, depth = 0): { classes?: string; content?: string; childrenHtml?: string; dataAttributes?: string } {
     const attrs: { classes?: string; content?: string; childrenHtml?: string; dataAttributes?: string } = {};
 
     let attributeSearchSpace = inner;
@@ -180,7 +185,7 @@ function parseAttributes(inner: string): { classes?: string; content?: string; c
     const childrenMatch = inner.match(/children\s*=\s*\[([\s\S]*)\]\s*;?\s*$/);
     if (childrenMatch) {
         const childrenContent = childrenMatch[1];
-        attrs.childrenHtml = parseElement(childrenContent);
+        attrs.childrenHtml = parseElement(childrenContent, depth + 1);
 
         // Remove the children block from the search space
         attributeSearchSpace = inner.replace(childrenMatch[0], "");

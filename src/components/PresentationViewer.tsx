@@ -438,7 +438,7 @@ export default function PresentationViewer({ presentation, onClose, editable, on
             <div className={`absolute inset-0 flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 md:p-6 top-[72px] bottom-[80px]'}`}>
                 {isDsl ? (
                     <div
-                        className={`${isFullscreen ? 'w-screen h-screen' : 'w-full h-full'} bg-white rounded-2xl shadow-2xl outline-none slide-container presentation-slide overflow-auto p-8 md:p-10`}
+                        className={`${isFullscreen ? 'w-screen h-screen' : 'w-full h-full'} bg-white rounded-2xl shadow-2xl outline-none slide-container presentation-slide overflow-auto`}
                         dangerouslySetInnerHTML={{ __html: slide as string }}
                         contentEditable={editable}
                         onBlur={handleBlur}

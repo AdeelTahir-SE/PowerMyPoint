@@ -57,6 +57,16 @@ export async function POST(request: NextRequest) {
         }
 
         // --- TIER LOGIC START ---
+        // TODO: TEMPORARY BYPASS - Remove this return in production
+        // Temporarily bypassing subscription checks for development
+        const LIMITS = {
+            free: { maxPresentations: 5, allowPrivate: false },
+            pro: { maxPresentations: 20, allowPrivate: true },
+        };
+        const tierLimit = LIMITS['pro']; // Set to pro limits temporarily
+        // --- TIER LOGIC END (BYPASSED) ---
+        
+        /* ORIGINAL TIER LOGIC - UNCOMMENT FOR PRODUCTION
         let currentTier = 'free'; // Default to free if no user found
         let usageCount = 0;
 
@@ -110,6 +120,7 @@ export async function POST(request: NextRequest) {
             );
         }
         // --- TIER LOGIC END ---
+        */
 
         // TWO-STAGE APPROACH: First generate outline, then generate full DSL
         // This ensures better structure, coherence, and quality
@@ -164,6 +175,7 @@ REQUIREMENTS:
 - Ensure logical flow from introduction to conclusion
 - Each slide should have clear purpose and visual appeal
 - Text must ALWAYS be readable - plan for high contrast and overlays when needed
+- use good fonts
 
 Return ONLY valid JSON, no markdown, no code blocks.`;
 
@@ -265,7 +277,11 @@ DESIGN SYSTEM - TYPOGRAPHY (CRITICAL):
 
 DESIGN SYSTEM - LAYOUT (CRITICAL):
 - Container Spacing: Use "p-8", "p-12", or "p-16" for main containers, "px-6 py-4" for smaller elements
-- Centered Content: Use "flex flex-col items-center justify-center" for centered layouts
+- Centered Content: MANDATORY STRUCTURE for centered content:
+  * Root slide container: "relative w-full h-screen overflow-hidden"
+  * Content wrapper: "absolute inset-0 flex flex-col items-center justify-center" - THIS IS REQUIRED for all slides
+  * Inner content container: "max-w-5xl mx-auto text-center" or "max-w-4xl mx-auto" for text content
+  * CRITICAL: Every slide MUST have the content wrapper with "flex flex-col items-center justify-center" to ensure proper centering
 - Text Containers: Use "max-w-4xl" or "max-w-5xl" with "mx-auto" for readable text widths
 - Element Gaps: Use "gap-4", "gap-6", or "gap-8" between related elements
 - Grid Layouts: Use "grid grid-cols-2" or "grid grid-cols-3" with "gap-6" for multi-column content
@@ -275,14 +291,18 @@ DESIGN SYSTEM - LAYOUT (CRITICAL):
 - Full Height: Use "h-screen" or "h-full" for full-slide layouts - CRITICAL: Root slide container MUST use "relative w-full h-screen" or "absolute inset-0" to fill viewport properly in fullscreen
 - Viewport Sizing: Root slide div should use "relative w-full h-screen overflow-hidden" to ensure proper fullscreen sizing
 
-DESIGN SYSTEM - COLORS (CRITICAL):
-- Background Gradients: Use "bg-gradient-to-br from-purple-600 to-indigo-600" or "bg-gradient-to-r from-cyan-500 to-blue-500" for vibrant backgrounds
-- Text Colors: Use "text-white" on dark backgrounds, "text-gray-900" on light backgrounds
-- Accent Colors: Use "text-purple-300", "text-cyan-300", "text-pink-300" for highlights and emphasis
-- Opacity Hierarchy: Use "text-white/90" for primary text, "text-white/80" for secondary, "text-white/60" for tertiary
+DESIGN SYSTEM - COLORS (CRITICAL - CONSISTENCY REQUIRED):
+- COLOR CONSISTENCY RULE: Choose ONE color scheme for the ENTIRE presentation and maintain it across ALL slides:
+  * Option A (Dark Theme): Dark backgrounds (bg-gradient-to-br from-purple-900/90 to-indigo-900/90) with white text (text-white) - USE THIS FOR ALL SLIDES
+  * Option B (Light Theme): Light backgrounds (bg-gradient-to-br from-blue-50 to-purple-50) with dark text (text-gray-900) - USE THIS FOR ALL SLIDES
+  * DO NOT mix dark and light themes - pick one and stick with it throughout the presentation
+- Background Gradients: Use consistent gradient direction and colors across slides (e.g., if slide 1 uses "from-purple-600 to-indigo-600", use similar purple/indigo gradients on all slides)
+- Text Colors: MANDATORY - If using dark backgrounds, ALL text must be "text-white" or "text-white/90". If using light backgrounds, ALL text must be "text-gray-900" or "text-gray-800"
+- Accent Colors: Use consistent accent colors (e.g., if slide 1 uses "text-purple-300", use purple accents throughout)
+- Opacity Hierarchy: Use "text-white/90" for primary text, "text-white/80" for secondary, "text-white/60" for tertiary (on dark backgrounds)
 - Contrast: ALWAYS ensure WCAG AA contrast (4.5:1 ratio) - test dark text on light backgrounds and vice versa
-- Overlay Colors: Use "bg-black/60", "bg-black/70" for dark overlays, "bg-white/90" for light overlays
-- Border Colors: Use "border-white/20", "border-purple-500/30" for subtle borders
+- Overlay Colors: Use consistent overlay opacity (e.g., if slide 1 uses "bg-black/70", use similar opacity on all slides with overlays)
+- Border Colors: Use "border-white/20" for dark themes, "border-gray-300" for light themes - keep consistent
 
 DESIGN SYSTEM - ANIMATIONS (CRITICAL):
 - Entrance Animations: Add to ALL elements - "animate-slide-in-up", "animate-fade-in-scale", "animate-zoom-in"
@@ -407,10 +427,10 @@ Please respond with a custom DSL format exactly like this:
             classes = "absolute inset-0 bg-gradient-to-br from-black/70 to-black/50";
           };
           div {
-            classes = "relative z-10 flex flex-col items-center justify-center h-full p-8 md:p-12 lg:p-16";
+            classes = "absolute inset-0 flex flex-col items-center justify-center";
             children = [
               div {
-                classes = "bg-black/70 backdrop-blur-md p-12 rounded-xl border border-white/20 max-w-5xl mx-auto animate-fade-in-scale delay-100";
+                classes = "bg-black/70 backdrop-blur-md p-12 rounded-xl border border-white/20 max-w-5xl mx-auto text-center animate-fade-in-scale delay-100";
                 children = [
                   h1 {
                     classes = "text-white text-7xl font-bold mb-6 drop-shadow-2xl fragment fade-up animate-slide-in-up delay-200";
@@ -431,6 +451,12 @@ Please respond with a custom DSL format exactly like this:
      }
    ];
 };
+
+CRITICAL STRUCTURE NOTES:
+- Every slide MUST have: Root div with "relative w-full h-screen overflow-hidden"
+- Then a content wrapper with "absolute inset-0 flex flex-col items-center justify-center" - this ensures centering
+- Then inner content containers with "max-w-5xl mx-auto" for proper width and centering
+- ALL slides must use the SAME color scheme (all dark with white text, OR all light with dark text)
 
 DSL RULES:
 1. Use standard Tailwind CSS classes for styling.
@@ -466,10 +492,12 @@ DSL RULES:
 17. ALWAYS add animations to elements - mix animate-slide-in-up, animate-fade-in-scale, animate-zoom-in with appropriate delays.
 
 CRITICAL GENERATION RULES:
+- COLOR CONSISTENCY IS MANDATORY: Choose ONE color scheme (dark OR light) and use it for ALL slides. DO NOT mix themes.
+- CENTERING IS MANDATORY: Every slide MUST use "absolute inset-0 flex flex-col items-center justify-center" wrapper to ensure proper centering
 - NO EMOJIS - NEVER use emojis (🌙, 🎯, 👽, 💉, 📡, 🧠, ⚡, ⚠️, ✓, 🌍, 🔍, 🕵️, 🏛️, etc.) - they look unprofessional and inconsistent
 - ALWAYS use Lucide icons instead: icon { content = "IconName"; classes = "w-6 h-6 text-white"; }
 - TEXT VISIBILITY IS MANDATORY: Every slide with a background image MUST have text wrapped in a semi-transparent overlay container (bg-black/60, bg-white/90, etc.) with backdrop-blur and text shadows
-- ALWAYS ensure text contrast: Use text-white on dark overlays, text-gray-900 on light overlays
+- ALWAYS ensure text contrast: Use text-white on dark overlays, text-gray-900 on light overlays - and maintain this consistently across ALL slides
 - ALWAYS add drop shadows to text: drop-shadow-lg or drop-shadow-2xl classes
 - NEVER place text directly over background images - always use an overlay container
 - ONLY include code blocks if the topic is explicitly about programming, software, or technical implementation
@@ -485,7 +513,7 @@ CRITICAL GENERATION RULES:
 - For non-technical topics: Focus on beautiful images, engaging text, and visual storytelling
 - NEVER use emojis - always use professional Lucide icons via the icon element
 
-Remember: This is a Reveal.js presentation with ALL features enabled. Use the right features for the right content - code for technical topics, visuals for general topics! TEXT MUST ALWAYS BE READABLE! NO EMOJIS - USE ICONS INSTEAD!`;
+Remember: This is a Reveal.js presentation with ALL features enabled. Use the right features for the right content - code for technical topics, visuals for general topics! TEXT MUST ALWAYS BE READABLE! NO EMOJIS - USE ICONS INSTEAD! MAINTAIN COLOR CONSISTENCY ACROSS ALL SLIDES! ENSURE PROPER CENTERING ON EVERY SLIDE!`;
                     } else {
                         // Normal mode prompt, incorporating the outline
                         dslPrompt = `You are an expert presentation designer specializing in creating beautiful, engaging presentations using a custom Domain-Specific Language (DSL).
@@ -507,7 +535,11 @@ DESIGN SYSTEM - TYPOGRAPHY (CRITICAL):
 
 DESIGN SYSTEM - LAYOUT (CRITICAL):
 - Container Spacing: Use "p-8", "p-12", or "p-16" for main containers, "px-6 py-4" for smaller elements
-- Centered Content: Use "flex flex-col items-center justify-center" for centered layouts
+- Centered Content: MANDATORY STRUCTURE for centered content:
+  * Root slide container: "relative w-full h-screen overflow-hidden"
+  * Content wrapper: "absolute inset-0 flex flex-col items-center justify-center" - THIS IS REQUIRED for all slides
+  * Inner content container: "max-w-5xl mx-auto text-center" or "max-w-4xl mx-auto" for text content
+  * CRITICAL: Every slide MUST have the content wrapper with "flex flex-col items-center justify-center" to ensure proper centering
 - Text Containers: Use "max-w-4xl" or "max-w-5xl" with "mx-auto" for readable text widths
 - Element Gaps: Use "gap-4", "gap-6", or "gap-8" between related elements
 - Grid Layouts: Use "grid grid-cols-2" or "grid grid-cols-3" with "gap-6" for multi-column content
@@ -515,13 +547,17 @@ DESIGN SYSTEM - LAYOUT (CRITICAL):
 - Responsive: Use "px-4 md:px-8 lg:px-12" for responsive padding
 - Vertical Spacing: Use "mb-4", "mb-6", "mb-8" for spacing between elements
 
-DESIGN SYSTEM - COLORS (CRITICAL):
-- Background Gradients: Use "bg-gradient-to-br from-purple-600 to-indigo-600" or "bg-gradient-to-r from-cyan-500 to-blue-500" for vibrant backgrounds
-- Text Colors: Use "text-white" on dark backgrounds, "text-gray-900" on light backgrounds
-- Accent Colors: Use "text-purple-300", "text-cyan-300", "text-pink-300" for highlights and emphasis
-- Opacity Hierarchy: Use "text-white/90" for primary text, "text-white/80" for secondary, "text-white/60" for tertiary
+DESIGN SYSTEM - COLORS (CRITICAL - CONSISTENCY REQUIRED):
+- COLOR CONSISTENCY RULE: Choose ONE color scheme for the ENTIRE presentation and maintain it across ALL slides:
+  * Option A (Dark Theme): Dark backgrounds (bg-gradient-to-br from-purple-900/90 to-indigo-900/90) with white text (text-white) - USE THIS FOR ALL SLIDES
+  * Option B (Light Theme): Light backgrounds (bg-gradient-to-br from-blue-50 to-purple-50) with dark text (text-gray-900) - USE THIS FOR ALL SLIDES
+  * DO NOT mix dark and light themes - pick one and stick with it throughout the presentation
+- Background Gradients: Use consistent gradient direction and colors across slides (e.g., if slide 1 uses "from-purple-600 to-indigo-600", use similar purple/indigo gradients on all slides)
+- Text Colors: MANDATORY - If using dark backgrounds, ALL text must be "text-white" or "text-white/90". If using light backgrounds, ALL text must be "text-gray-900" or "text-gray-800"
+- Accent Colors: Use consistent accent colors (e.g., if slide 1 uses "text-purple-300", use purple accents throughout)
+- Opacity Hierarchy: Use "text-white/90" for primary text, "text-white/80" for secondary, "text-white/60" for tertiary (on dark backgrounds)
 - Contrast: ALWAYS ensure WCAG AA contrast (4.5:1 ratio)
-- Overlay Colors: Use "bg-black/60", "bg-black/70" for dark overlays, "bg-white/90" for light overlays
+- Overlay Colors: Use consistent overlay opacity (e.g., if slide 1 uses "bg-black/70", use similar opacity on all slides with overlays)
 
 DESIGN SYSTEM - ANIMATIONS (CRITICAL):
 - Entrance Animations: Add to ALL elements - "animate-slide-in-up", "animate-fade-in-scale", "animate-zoom-in"
@@ -529,7 +565,7 @@ DESIGN SYSTEM - ANIMATIONS (CRITICAL):
 - Auto-Playing: Add "animate-pulse", "animate-float", "animate-glow" to key elements for visual interest
 - Animation Variety: Mix different entrance animations (slide-in-up, fade-in-scale, zoom-in) across elements
 
-Please respond with a custom DSL format exactly like this:
+Please respond with a custom DSL format exactly like this (NOTE THE MANDATORY CENTERING STRUCTURE):
 
         PRESENTATION {
            id = "presentation-id";
@@ -547,10 +583,10 @@ Please respond with a custom DSL format exactly like this:
             classes = "absolute inset-0 bg-gradient-to-br from-black/70 to-black/50";
           };
           div {
-            classes = "relative z-10 flex flex-col items-center justify-center h-full p-8 md:p-12 lg:p-16";
+            classes = "absolute inset-0 flex flex-col items-center justify-center";
             children = [
               div {
-                classes = "bg-black/70 backdrop-blur-md p-12 rounded-xl border border-white/20 max-w-5xl mx-auto animate-fade-in-scale delay-100";
+                classes = "bg-black/70 backdrop-blur-md p-12 rounded-xl border border-white/20 max-w-5xl mx-auto text-center animate-fade-in-scale delay-100";
                 children = [
                   h1 {
                     classes = "text-white text-7xl font-bold mb-6 drop-shadow-2xl animate-slide-in-up delay-200";
@@ -570,6 +606,12 @@ Please respond with a custom DSL format exactly like this:
   ];
 };
 
+CRITICAL STRUCTURE NOTES:
+- Every slide MUST have: Root div with "relative w-full h-screen overflow-hidden"
+- Then a content wrapper with "absolute inset-0 flex flex-col items-center justify-center" - this ensures centering
+- Then inner content containers with "max-w-5xl mx-auto" for proper width and centering
+- ALL slides must use the SAME color scheme (all dark with white text, OR all light with dark text)
+
 Rules:
 1. Use standard Tailwind CSS classes for styling.
 2. For images, use Unsplash URLs that match the content.
@@ -579,8 +621,16 @@ Rules:
 6. Use appropriate padding and text colors so that presentation look good on all screens and all themes on device
 6. Return ONLY the DSL string, starting with PRESENTATION {.
 7. TYPOGRAPHY: Follow font size hierarchy - H1: text-7xl/text-6xl, H2: text-5xl/text-4xl, H3: text-3xl/text-2xl, Body: text-xl/text-lg
-8. LAYOUT: Use proper spacing (p-8, p-12, p-16), max-widths (max-w-4xl, max-w-5xl), gaps (gap-4, gap-6, gap-8), and responsive padding
-9. COLORS: Use gradient backgrounds, proper text colors (text-white on dark, text-gray-900 on light), accent colors for highlights
+8. LAYOUT (MANDATORY): 
+   - EVERY slide MUST use this structure: Root div "relative w-full h-screen overflow-hidden" → Content wrapper "absolute inset-0 flex flex-col items-center justify-center" → Inner container "max-w-5xl mx-auto"
+   - This ensures ALL content is properly centered on every slide
+   - Use proper spacing (p-8, p-12, p-16), max-widths (max-w-4xl, max-w-5xl), gaps (gap-4, gap-6, gap-8), and responsive padding
+9. COLORS (MANDATORY CONSISTENCY):
+   - Choose ONE color scheme for the ENTIRE presentation (all dark OR all light)
+   - If dark theme: ALL slides use dark backgrounds (bg-gradient-to-br from-purple-900/90 to-indigo-900/90) with white text (text-white)
+   - If light theme: ALL slides use light backgrounds (bg-gradient-to-br from-blue-50 to-purple-50) with dark text (text-gray-900)
+   - DO NOT mix themes - maintain consistency across all slides
+   - Use consistent accent colors throughout (e.g., if slide 1 uses purple accents, use purple on all slides)
 10. ANIMATIONS: Add entrance animations (animate-slide-in-up, animate-fade-in-scale, animate-zoom-in) to ALL elements with delays (delay-100, delay-200, delay-300)
 11. CRITICAL TEXT VISIBILITY RULES (MANDATORY):
    - ALWAYS wrap text in containers with semi-transparent backgrounds (bg-black/60, bg-white/90, etc.) when using background images
@@ -592,6 +642,7 @@ Rules:
    - Ensure text has sufficient padding: p-8, p-12, px-6, py-4
    - Text must ALWAYS be readable - if background is light, use dark text; if background is dark, use light text
 12. ALWAYS add animations to elements - mix animate-slide-in-up, animate-fade-in-scale, animate-zoom-in with appropriate delays for professional feel
+13. CENTERING RULE: Every slide's content wrapper MUST include "flex flex-col items-center justify-center" to ensure proper vertical and horizontal centering
 
 `;
                     }
